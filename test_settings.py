@@ -16,46 +16,48 @@ def root(*args):
 
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'default.db',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "default.db",
+        "USER": "",
+        "PASSWORD": "",
+        "HOST": "",
+        "PORT": "",
     }
 }
 
 INSTALLED_APPS = (
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.messages',
-    'django.contrib.sessions',
-    'platform_plugin_elm_credentials',
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.messages",
+    "django.contrib.sessions",
+    "platform_plugin_elm_credentials",
 )
 
 LOCALE_PATHS = [
-    root('platform_plugin_elm_credentials', 'conf', 'locale'),
+    root("platform_plugin_elm_credentials", "conf", "locale"),
 ]
 
-ROOT_URLCONF = 'platform_plugin_elm_credentials.urls'
+ROOT_URLCONF = "platform_plugin_elm_credentials.urls"
 
-SECRET_KEY = 'insecure-secret-key'
+SECRET_KEY = "insecure-secret-key"
 
 MIDDLEWARE = (
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
 )
 
-TEMPLATES = [{
-    'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'APP_DIRS': False,
-    'OPTIONS': {
-        'context_processors': [
-            'django.contrib.auth.context_processors.auth',  # this is required for admin
-            'django.contrib.messages.context_processors.messages',  # this is required for admin
-        ],
-    },
-}]
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": False,
+        "OPTIONS": {
+            "context_processors": [
+                "django.contrib.auth.context_processors.auth",  # this is required for admin
+                "django.contrib.messages.context_processors.messages",  # this is required for admin
+            ],
+        },
+    }
+]
