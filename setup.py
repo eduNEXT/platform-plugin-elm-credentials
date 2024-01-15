@@ -161,6 +161,11 @@ setup(
         ],
         exclude=["*tests"],
     ),
+    entry_points={
+        "lms.djangoapp": [
+            "platform_plugin_elm_credentials = platform_plugin_elm_credentials.apps:PlatformPluginElmCredentialsConfig"
+        ],
+    },
     include_package_data=True,
     install_requires=load_requirements("requirements/base.in"),
     python_requires=">=3.8",

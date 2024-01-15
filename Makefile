@@ -77,6 +77,7 @@ test-all: quality pii_check ## run tests on every supported Python/Django combin
 	tox -e docs
 
 validate: quality pii_check test ## run tests and quality checks
+	rm -rf pii_report
 
 format: # format code with black and isort
 	black platform_plugin_elm_credentials setup.py manage.py test_settings.py
