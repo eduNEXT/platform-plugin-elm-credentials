@@ -19,6 +19,9 @@ coverage[toml]==7.4.0
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.txt
+    #   djangorestframework
+djangorestframework==3.14.0
+    # via -r requirements/base.txt
 exceptiongroup==1.2.0
     # via pytest
 iniconfig==2.0.0
@@ -49,6 +52,7 @@ pytz==2023.3.post1
     # via
     #   -r requirements/base.txt
     #   django
+    #   djangorestframework
 pyyaml==6.0.1
     # via code-annotations
 sqlparse==0.4.4
