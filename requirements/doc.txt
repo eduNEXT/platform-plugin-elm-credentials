@@ -43,6 +43,9 @@ django==3.2.23
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
+    #   djangorestframework
+djangorestframework==3.14.0
+    # via -r requirements/test.txt
 doc8==1.1.1
     # via -r requirements/doc.in
 docutils==0.19
@@ -148,6 +151,7 @@ pytz==2023.3.post1
     #   -r requirements/test.txt
     #   babel
     #   django
+    #   djangorestframework
 pyyaml==6.0.1
     # via
     #   -r requirements/test.txt

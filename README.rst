@@ -1,5 +1,5 @@
-platform-plugin-elm-credentials
-#############################
+Platform Plugin ELM Credentials
+###############################
 
 .. note::
 

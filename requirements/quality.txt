@@ -35,6 +35,9 @@ django==3.2.23
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
+    #   djangorestframework
+djangorestframework==3.14.0
+    # via -r requirements/test.txt
 edx-lint==5.3.6
     # via -r requirements/quality.in
 exceptiongroup==1.2.0
@@ -110,6 +113,7 @@ pytz==2023.3.post1
     # via
     #   -r requirements/test.txt
     #   django
+    #   djangorestframework
 pyyaml==6.0.1
     # via
     #   -r requirements/test.txt
