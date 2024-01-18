@@ -71,7 +71,7 @@ class ElmCredentialBuilderAPIView(APIView):
             course_key = CourseKey.from_string(course_id)
         except InvalidKeyError:
             return api_field_errors(
-                {"course_id": f"The supplied {course_id=} does not exists."},
+                {"course_id": f"The supplied {course_id=} key is not valid."},
                 status_code=status.HTTP_404_NOT_FOUND,
             )
 
