@@ -4,6 +4,10 @@
 #
 #    make upgrade
 #
+annotated-types==0.6.0
+    # via
+    #   -r requirements/test.txt
+    #   pydantic
 asgiref==3.7.2
     # via
     #   -r requirements/test.txt
@@ -12,11 +16,25 @@ astroid==3.0.2
     # via
     #   pylint
     #   pylint-celery
+certifi==2023.11.17
+    # via
+    #   -r requirements/test.txt
+    #   requests
+cffi==1.16.0
+    # via
+    #   -r requirements/test.txt
+    #   cryptography
+    #   pynacl
+charset-normalizer==3.3.2
+    # via
+    #   -r requirements/test.txt
+    #   requests
 click==8.1.7
     # via
     #   -r requirements/test.txt
     #   click-log
     #   code-annotations
+    #   edx-django-utils
     #   edx-lint
 click-log==0.4.0
     # via edx-lint
@@ -29,21 +47,60 @@ coverage[toml]==7.4.0
     #   -r requirements/test.txt
     #   coverage
     #   pytest-cov
+cryptography==41.0.7
+    # via
+    #   -r requirements/test.txt
+    #   pyjwt
 dill==0.3.7
     # via pylint
 django==3.2.23
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/test.txt
+    #   django-crum
+    #   django-waffle
     #   djangorestframework
+    #   drf-jwt
+    #   edx-django-utils
+    #   edx-drf-extensions
+django-crum==0.7.9
+    # via
+    #   -r requirements/test.txt
+    #   edx-django-utils
+django-waffle==4.1.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-django-utils
+    #   edx-drf-extensions
 djangorestframework==3.14.0
+    # via
+    #   -r requirements/test.txt
+    #   drf-jwt
+    #   edx-drf-extensions
+drf-jwt==1.19.2
+    # via
+    #   -r requirements/test.txt
+    #   edx-drf-extensions
+edx-django-utils==5.10.1
+    # via
+    #   -r requirements/test.txt
+    #   edx-drf-extensions
+edx-drf-extensions==9.1.2
     # via -r requirements/test.txt
 edx-lint==5.3.6
     # via -r requirements/quality.in
+edx-opaque-keys==2.5.1
+    # via
+    #   -r requirements/test.txt
+    #   edx-drf-extensions
 exceptiongroup==1.2.0
     # via
     #   -r requirements/test.txt
     #   pytest
+idna==3.6
+    # via
+    #   -r requirements/test.txt
+    #   requests
 iniconfig==2.0.0
     # via
     #   -r requirements/test.txt
@@ -62,7 +119,11 @@ markupsafe==2.1.3
     #   jinja2
 mccabe==0.7.0
     # via pylint
-openedx-atlas==0.5.0
+newrelic==9.5.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-django-utils
+openedx-atlas==0.6.0
     # via -r requirements/test.txt
 packaging==23.2
     # via
@@ -78,10 +139,30 @@ pluggy==1.3.0
     # via
     #   -r requirements/test.txt
     #   pytest
+psutil==5.9.7
+    # via
+    #   -r requirements/test.txt
+    #   edx-django-utils
 pycodestyle==2.11.1
     # via -r requirements/quality.in
+pycparser==2.21
+    # via
+    #   -r requirements/test.txt
+    #   cffi
+pydantic==2.5.3
+    # via -r requirements/test.txt
+pydantic-core==2.14.6
+    # via
+    #   -r requirements/test.txt
+    #   pydantic
 pydocstyle==6.3.0
     # via -r requirements/quality.in
+pyjwt[crypto]==2.8.0
+    # via
+    #   -r requirements/test.txt
+    #   drf-jwt
+    #   edx-drf-extensions
+    #   pyjwt
 pylint==3.0.3
     # via
     #   edx-lint
@@ -96,6 +177,14 @@ pylint-plugin-utils==0.8.2
     # via
     #   pylint-celery
     #   pylint-django
+pymongo==3.13.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-opaque-keys
+pynacl==1.5.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-django-utils
 pytest==7.4.4
     # via
     #   -r requirements/test.txt
@@ -118,6 +207,14 @@ pyyaml==6.0.1
     # via
     #   -r requirements/test.txt
     #   code-annotations
+requests==2.31.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-drf-extensions
+semantic-version==2.10.0
+    # via
+    #   -r requirements/test.txt
+    #   edx-drf-extensions
 six==1.16.0
     # via edx-lint
 snowballstemmer==2.2.0
@@ -130,6 +227,8 @@ stevedore==5.1.0
     # via
     #   -r requirements/test.txt
     #   code-annotations
+    #   edx-django-utils
+    #   edx-opaque-keys
 text-unidecode==1.3
     # via
     #   -r requirements/test.txt
@@ -145,6 +244,14 @@ tomlkit==0.12.3
 typing-extensions==4.9.0
     # via
     #   -r requirements/test.txt
+    #   annotated-types
     #   asgiref
     #   astroid
+    #   edx-opaque-keys
+    #   pydantic
+    #   pydantic-core
     #   pylint
+urllib3==2.1.0
+    # via
+    #   -r requirements/test.txt
+    #   requests

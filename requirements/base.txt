@@ -4,22 +4,96 @@
 #
 #    make upgrade
 #
+annotated-types==0.6.0
+    # via pydantic
 asgiref==3.7.2
     # via django
+certifi==2023.11.17
+    # via requests
+cffi==1.16.0
+    # via
+    #   cryptography
+    #   pynacl
+charset-normalizer==3.3.2
+    # via requests
+click==8.1.7
+    # via edx-django-utils
+cryptography==41.0.7
+    # via pyjwt
 django==3.2.23
     # via
     #   -c https://raw.githubusercontent.com/edx/edx-lint/master/edx_lint/files/common_constraints.txt
     #   -r requirements/base.in
+    #   django-crum
+    #   django-waffle
     #   djangorestframework
+    #   drf-jwt
+    #   edx-django-utils
+    #   edx-drf-extensions
+django-crum==0.7.9
+    # via edx-django-utils
+django-waffle==4.1.0
+    # via
+    #   edx-django-utils
+    #   edx-drf-extensions
 djangorestframework==3.14.0
+    # via
+    #   -r requirements/base.in
+    #   drf-jwt
+    #   edx-drf-extensions
+drf-jwt==1.19.2
+    # via edx-drf-extensions
+edx-django-utils==5.10.1
+    # via edx-drf-extensions
+edx-drf-extensions==9.1.2
     # via -r requirements/base.in
-openedx-atlas==0.5.0
+edx-opaque-keys==2.5.1
+    # via edx-drf-extensions
+idna==3.6
+    # via requests
+newrelic==9.5.0
+    # via edx-django-utils
+openedx-atlas==0.6.0
     # via -r requirements/base.in
+pbr==6.0.0
+    # via stevedore
+psutil==5.9.7
+    # via edx-django-utils
+pycparser==2.21
+    # via cffi
+pydantic==2.5.3
+    # via -r requirements/base.in
+pydantic-core==2.14.6
+    # via pydantic
+pyjwt[crypto]==2.8.0
+    # via
+    #   drf-jwt
+    #   edx-drf-extensions
+    #   pyjwt
+pymongo==3.13.0
+    # via edx-opaque-keys
+pynacl==1.5.0
+    # via edx-django-utils
 pytz==2023.3.post1
     # via
     #   django
     #   djangorestframework
+requests==2.31.0
+    # via edx-drf-extensions
+semantic-version==2.10.0
+    # via edx-drf-extensions
 sqlparse==0.4.4
     # via django
+stevedore==5.1.0
+    # via
+    #   edx-django-utils
+    #   edx-opaque-keys
 typing-extensions==4.9.0
-    # via asgiref
+    # via
+    #   annotated-types
+    #   asgiref
+    #   edx-opaque-keys
+    #   pydantic
+    #   pydantic-core
+urllib3==2.1.0
+    # via requests

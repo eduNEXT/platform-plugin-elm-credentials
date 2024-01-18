@@ -3,5 +3,6 @@
 
 Django                      # Web application framework
 djangorestframework         # REST API framework
-
+edx-drf-extensions          # Extensions to Django REST Framework for edX
+pydantic                    # Data validation and settings management
 openedx-atlas
