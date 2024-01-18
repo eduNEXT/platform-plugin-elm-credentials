@@ -1,4 +1,4 @@
-.PHONY: clean clean_tox compile_translations coverage diff_cover docs dummy_translations \
+.PHONY: clean clean_tox compile_translations coverage diff_cover dummy_translations \
         extract_translations fake_translations help pii_check pull_translations push_translations \
         quality requirements selfcheck test test-all upgrade validate install_transifex_client
 
@@ -27,10 +27,6 @@ clean_tox: ## clear tox requirements cache
 coverage: clean ## generate and view HTML coverage report
 	pytest --cov-report html
 	$(BROWSER)htmlcov/index.html
-
-docs: ## generate Sphinx HTML documentation, including API docs
-	tox -e docs
-	$(BROWSER)docs/_build/html/index.html
 
 # Define PIP_COMPILE_OPTS=-v to get more information during make upgrade.
 PIP_COMPILE = pip-compile --upgrade $(PIP_COMPILE_OPTS)
@@ -74,7 +70,6 @@ diff_cover: test ## find diff lines that need test coverage
 
 test-all: quality pii_check ## run tests on every supported Python/Django combination
 	tox
-	tox -e docs
 
 validate: quality pii_check test ## run tests and quality checks
 	rm -rf pii_report
@@ -89,7 +84,6 @@ selfcheck: ## check that the Makefile is well-formed
 ## Localization targets
 
 extract_translations: ## extract strings to be translated, outputting .mo files
-	rm -rf docs/_build
 	cd platform_plugin_elm_credentials && i18n_tool extract --no-segment
 
 compile_translations: ## compile translation files, outputting .po files for each supported language
