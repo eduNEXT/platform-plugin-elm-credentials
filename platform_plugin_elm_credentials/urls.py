@@ -1,10 +1,14 @@
-"""
-URLs for platform_plugin_elm_credentials.
-"""
-from django.urls import re_path  # pylint: disable=unused-import
-from django.views.generic import TemplateView  # pylint: disable=unused-import
+"""URL patterns for the platform_plugin_elm_credentials plugin."""
+from django.urls import path
+
+from platform_plugin_elm_credentials.api import views
+
+app_name = "platform_plugin_elm_credentials"
 
 urlpatterns = [
-    # TODO: Fill in URL patterns and views here.
-    # re_path(r'', TemplateView.as_view(template_name="platform_plugin_elm_credentials/base.html")),
+    path(
+        "credential-builder/",
+        views.ElmCredentialBuilderAPIView.as_view(),
+        name="credential-builder-api",
+    ),
 ]
