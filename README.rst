@@ -1,74 +1,252 @@
 Platform Plugin ELM Credentials
 ###############################
 
-.. note::
+|ci-badge| |license-badge| |status-badge|
 
-  This README was auto-generated. Maintainer: please review its contents and
-  update all relevant sections. Instructions to you are marked with
-  "PLACEHOLDER" or "TODO". Update or remove those sections, and remove this
-  note when you are done.
-
-|pypi-badge| |ci-badge| |codecov-badge| |doc-badge| |pyversions-badge|
-|license-badge| |status-badge|
 
 Purpose
 *******
 
-Open edx plugin that includes API to generate JSON files in ELMv3
+Open edX plugin that includes an API endpoint to generate a JSON file with the
+`European Learning Model`_ (ELMv3) data model format. Only learners who have
+completed a course and have a certificate of completion can download the JSON
+file with the ELMv3 data model.
 
-TODO: The ``README.rst`` file should start with a brief description of the repository and its purpose.
-It should be described in the context of other repositories under the ``openedx``
-organization. It should make clear where this fits in to the overall Open edX
-codebase and should be oriented towards people who are new to the Open edX
-project.
+This plugin has been created as an open source contribution to the Open edX
+platform and has been funded by the Unidigital project from the Spanish
+Government - 2024.
 
-Getting Started with Development
-********************************
+.. _European Learning Model: https://github.com/european-commission-empl/European-Learning-Model
 
-Please see the Open edX documentation for `guidance on Python development <https://docs.openedx.org/en/latest/developers/how-tos/get-ready-for-python-dev.html>`_ in this repo.
 
-Deploying
-*********
+Getting Started
+***************
 
-TODO: How can a new user go about deploying this component? Is it just a few
-commands? Is there a larger how-to that should be linked here?
+Developing
+==========
 
-PLACEHOLDER: For details on how to deploy this component, see the `deployment how-to`_
+One Time Setup
+--------------
 
-.. _deployment how-to: https://docs.openedx.org/projects/platform-plugin-elm-credentials/how-tos/how-to-deploy-this-component.html
+Clone the repository:
+
+.. code-block:: bash
+
+  git clone git@github.com:eduNEXT/platform_plugin_elm_credentials.git
+  cd platform_plugin_elm_credentials
+
+Set up a virtualenv with the same name as the repo and activate it. Here's how
+you might do that if you have ``virtualenv`` set up:
+
+.. code-block:: bash
+
+  virtualenv -p python3.8 platform_plugin_elm_credentials
+
+Every time you develop something in this repo
+---------------------------------------------
+
+Activate the virtualenv. Here's how you might do that if you're using
+``virtualenv``:
+
+.. code-block:: bash
+
+  source platform_plugin_elm_credentials/bin/activate
+
+Grab the latest code:
+
+.. code-block:: bash
+
+  git checkout main
+  git pull
+
+Install/update the dev requirements:
+
+.. code-block:: bash
+
+  make requirements
+
+Run the tests and quality checks (to verify the status before you make any
+changes):
+
+.. code-block:: bash
+
+  make validate
+
+Make a new branch for your changes:
+
+.. code-block:: bash
+
+  git checkout -b <your_github_username>/<short_description>
+
+Using your favorite editor, edit the code to make your change:
+
+.. code-block:: bash
+
+  vim ...
+
+Run your new tests:
+
+.. code-block:: bash
+
+  pytest ./path/to/new/tests
+
+Run all the tests and quality checks:
+
+.. code-block:: bash
+
+  make validate
+
+Commit all your changes, push your branch to github, and open a PR:
+
+.. code-block:: bash
+
+  git commit ...
+  git push
+
+
+Using the API
+*************
+
+**IMPORTANT**: To use the API, you need to have a course with **certificates**
+enabled. You should consider the following:
+
+1. You should configure from the Django administrator the **coursemode**, the
+   **certificate generation configuration**, and the **certificate html view configuration**
+2. You should activate certificates in the course from Studio in the
+   **Settings** > **Certificates**.
+
+Now, you can use the API. The API endpoint is protected with the same auth
+method as the Open edX platform. For generate a token, you can use the next
+endpoint:
+
+- POST ``/<lms_host>/oauth2/access_token/``: Generate a token for the user. The
+  content type of the request must be ``application/x-www-form-urlencoded``.
+
+  **Body parameters**
+
+  - ``client_id``: Client ID of the OAuth2 application. You can find it in the
+    Django admin panel. Normally, it is ``login-service-client-id``.
+  - ``grant_type``: Grant type of the OAuth2 application. Normally, it is
+    ``password``.
+  - ``username``: Username of the user.
+  - ``password``: Password of the user.
+  - ``token_type``: Type of the token. By default, it is ``bearer``
+
+  Alternatively, you can use a new OAuth2 application. You can create a new
+  application in the Django admin panel. The body parameters are the same as
+  the previous endpoint, but you must use the ``client_id`` and ``client_secret``
+  of the new application. The ``grant_type`` must be ``client_credentials``.
+
+  **Response**
+
+  - ``access_token``: Access token of the user. You must use this token in the
+    ``Authorization`` header of the requests to the API.
+
+Finally, you are ready to use the API. The next endpoint is available:
+
+- GET ``/<lms_host>/platform-plugin-elm-credentials/<course_id>/api/credential-builder/``:
+  List all the topics in the course.
+
+  **Path parameters**
+
+  - ``course_id``: ID of the course.
+
+  **Query parameters**
+
+  - ``expires_at`` (optional): Date of the expiration of the credential. It
+    must be in the format ``YYYY-MM-DDTHH:mm:ss±hh:mm``. This parameter
+    modifies the properties ``validUntil`` and ``expirationDate`` of the ELMv3
+    format. By default, it is ``None``.
+  - ``to_file`` (optional): If it is ``true``, the response will be a JSON file
+    with the ELMv3 format. If it is ``false``, the response will be a JSON with
+    the ELMv3 format. By default, it is ``true``.
+
+
+Configuring plugin settings
+***************************
+
+You can configure some settings for the plugin. The available settings are the
+following:
+
+* **primary_language_code**: Primary language code of the credential. It is
+  used to generate the ``primaryLanguage`` property of the ELMv3 format. By
+  default, the language defined in the platform is used.
+* **primary_language_map**: Map of the primary language code with the language.
+  This settings is useful when the language defined in the primary language
+  code is different from English or Spanish.
+* **org_country_code**: Country code of the organization. It is used to
+  generate the ``countryCode`` property of the ELMv3 format. By default, it is
+  ``ESP``.
+* **issuer_id**: ID of the issuer. It is used to generate the ``issuer`` property
+  of the ELMv3 format. By default, a random UUID is generated.
+
+Default settings are defined for **Unidigital project**. If you want to change
+the settings, you can do this in two ways:
+
+1. You can configure the settings in a specific course using ``Other Course Settings``
+   in the ``Advanced Settings`` section in Studio.
+
+   .. code-block:: json
+
+    {
+      ...
+      "ELM_CREDENTIALS_DEFAULTS": {
+        "primary_language_code": "POR",
+        "primary_language_map": {"fr": "FRA", "de": "DEU"},
+        "org_country_code": "PRT",
+        "issuer_id": "8fb2a434-e46b-4fd9-80d1-ce7ff11c0048"
+      }
+    }
+
+2. You can configure the settings using a Django setting in the LMS.
+
+   .. code-block:: python
+
+    ELM_CREDENTIALS_DEFAULTS = {
+      "primary_language_code": "POR",
+      "primary_language_map": {"fr": "FRA", "de": "DEU"},
+      "org_country_code": "PRT",
+      "issuer_id": "8fb2a434-e46b-4fd9-80d1-ce7ff11c0048",
+    }
+
+The order of precedence is the following:
+
+1. Course settings
+2. Django settings
+3. Default settings
+
+
+Testing JSON file
+*****************
+
+Test the API-generated JSON file using the `EU credential builder`_. In step #3
+**(Upload)**, submit the JSON file created by the API and verify that the
+credential is valid.
+
+.. _EU credential builder: https://webgate.acceptance.ec.europa.eu/europass/edci-issuer/#/home
+
 
 Getting Help
 ************
 
-Documentation
-=============
+If you're having trouble, we have discussion forums at `discussions`_ where you
+can connect with others in the community.
 
-PLACEHOLDER: Start by going through `the documentation`_.  If you need more help see below.
+Our real-time conversations are on Slack. You can request a
+`Slack invitation`_, then join our `community Slack workspace`_.
 
-.. _the documentation: https://docs.openedx.org/projects/platform-plugin-elm-credentials
-
-(TODO: `Set up documentation <https://openedx.atlassian.net/wiki/spaces/DOC/pages/21627535/Publish+Documentation+on+Read+the+Docs>`_)
-
-More Help
-=========
-
-If you're having trouble, we have discussion forums at
-https://discuss.openedx.org where you can connect with others in the
-community.
-
-Our real-time conversations are on Slack. You can request a `Slack
-invitation`_, then join our `community Slack workspace`_.
-
-For anything non-trivial, the best path is to open an issue in this
+For anything non-trivial, the best path is to open an `issue`_ in this
 repository with as many details about the issue you are facing as you
 can provide.
 
-https://github.com/eduNEXT/platform-plugin-elm-credentials/issues
+For more information about these options, see the `Getting Help`_ page.
 
-For more information about these options, see the `Getting Help <https://openedx.org/getting-help>`__ page.
-
+.. _discussions: https://discuss.openedx.org
 .. _Slack invitation: https://openedx.org/slack
 .. _community Slack workspace: https://openedx.slack.com/
+.. _issue: https://github.com/eduNEXT/platform-plugin-teams/issues
+.. _Getting Help: https://openedx.org/getting-help
+
 
 License
 *******
@@ -78,11 +256,11 @@ otherwise noted.
 
 Please see `LICENSE.txt <LICENSE.txt>`_ for details.
 
+
 Contributing
 ************
 
-Contributions are very welcome.
-Please read `How To Contribute <https://openedx.org/r/how-to-contribute>`_ for details.
+Contributions are very welcome. Please read `How To Contribute`_ for details.
 
 This project is currently accepting all types of contributions, bug fixes,
 security fixes, maintenance work, or new features.  However, please make sure
@@ -91,53 +269,44 @@ beginning development to maximize the chances of your change being accepted.
 You can start a conversation by creating a new issue on this repo summarizing
 your idea.
 
-The Open edX Code of Conduct
-****************************
+.. _How To Contribute: https://openedx.org/r/how-to-contribute
 
-All community members are expected to follow the `Open edX Code of Conduct`_.
 
-.. _Open edX Code of Conduct: https://openedx.org/code-of-conduct/
+Adding properties to the ELMv3 format
+=====================================
 
-People
-******
+The current implementation has the minimum properties to build a credential
+under the format ELMv3. If you want to add more properties, you can do it
+following the next steps:
 
-The assigned maintainers for this component and other project details may be
-found in `Backstage`_. Backstage pulls this data from the ``catalog-info.yaml``
-file in this repo.
+1. Add the new properties in the ``serializers.py`` file. In this file, you
+   will all models that are used in the API. Most of the properties require you
+   create a new class that inherits from ``ConfigModel``.
+2. Normally, you will also need to add the new properties in the ``CredentialBuilder``
+   class.
+3. You must take into account the ELMv3 format to add the new properties.
+   Normally, properties have an ``id`` and a ``type``.
 
-.. _Backstage: https://backstage.openedx.org/catalog/default/component/platform-plugin-elm-credentials
 
 Reporting Security Issues
 *************************
 
-Please do not report security issues in public. Please email security@openedx.org.
+Please do not report security issues in public. Please email security@edunext.co.
 
-.. |pypi-badge| image:: https://img.shields.io/pypi/v/platform-plugin-elm-credentials.svg
+.. It's not required by our contractor at the moment but can be published later
+.. .. |pypi-badge| image:: https://img.shields.io/pypi/v/platform-plugin-elm-credentials.svg
     :target: https://pypi.python.org/pypi/platform-plugin-elm-credentials/
     :alt: PyPI
 
-.. |ci-badge| image:: https://github.com/eduNEXT/platform-plugin-elm-credentials/workflows/Python%20CI/badge.svg?branch=main
+.. |ci-badge| image:: https://github.com/eduNEXT/platform-plugin-elm-credentials/actions/workflows/ci.yml/badge.svg?branch=main
     :target: https://github.com/eduNEXT/platform-plugin-elm-credentials/actions
     :alt: CI
-
-.. |codecov-badge| image:: https://codecov.io/github/eduNEXT/platform-plugin-elm-credentials/coverage.svg?branch=main
-    :target: https://codecov.io/github/eduNEXT/platform-plugin-elm-credentials?branch=main
-    :alt: Codecov
-
-.. |doc-badge| image:: https://readthedocs.org/projects/platform-plugin-elm-credentials/badge/?version=latest
-    :target: https://docs.openedx.org/projects/platform-plugin-elm-credentials
-    :alt: Documentation
-
-.. |pyversions-badge| image:: https://img.shields.io/pypi/pyversions/platform-plugin-elm-credentials.svg
-    :target: https://pypi.python.org/pypi/platform-plugin-elm-credentials/
-    :alt: Supported Python versions
 
 .. |license-badge| image:: https://img.shields.io/github/license/eduNEXT/platform-plugin-elm-credentials.svg
     :target: https://github.com/eduNEXT/platform-plugin-elm-credentials/blob/main/LICENSE.txt
     :alt: License
 
-.. TODO: Choose one of the statuses below and remove the other status-badge lines.
-.. |status-badge| image:: https://img.shields.io/badge/Status-Experimental-yellow
-.. .. |status-badge| image:: https://img.shields.io/badge/Status-Maintained-brightgreen
+..  |status-badge| image:: https://img.shields.io/badge/Status-Maintained-brightgreen
+.. .. |status-badge| image:: https://img.shields.io/badge/Status-Experimental-yellow
 .. .. |status-badge| image:: https://img.shields.io/badge/Status-Deprecated-orange
 .. .. |status-badge| image:: https://img.shields.io/badge/Status-Unsupported-red
