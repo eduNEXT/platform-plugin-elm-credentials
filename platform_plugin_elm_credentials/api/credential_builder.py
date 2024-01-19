@@ -21,6 +21,7 @@ class CredentialBuilder:
         course (CourseOverview): The course for which credentials are being built.
         user (User): The user for whom credentials are being built.
         certificate (GeneratedCertificate): The certificate associated with the user's completion of the course.
+        additional_params (dict): Additional parameters for the credential.
 
     Properties:
         full_name (str): The full name of the user.
@@ -30,10 +31,11 @@ class CredentialBuilder:
             Constructs and returns the ELM credential in the form of a dictionary.
     """
 
-    def __init__(self, course, user, certificate):
+    def __init__(self, course, user, certificate, additional_params):
         self.course = course
         self.user = user
         self.certificate = certificate
+        self.additional_params = additional_params
 
     @property
     def full_name(self) -> str:
@@ -81,7 +83,11 @@ class CredentialBuilder:
         delivery_details = DeliveryDetails(delivery_address=self.user.email)
 
         return {
-            "issuer": issuer,
-            "credential_subject": credential_subject,
-            "delivery_details": delivery_details,
+            "credential": {
+                "issuer": issuer,
+                "credential_subject": credential_subject,
+                "delivery_details": delivery_details,
+                "expiration_date": self.additional_params.get("expired_at"),
+                "valid_until": self.additional_params.get("expired_at"),
+            }
         }

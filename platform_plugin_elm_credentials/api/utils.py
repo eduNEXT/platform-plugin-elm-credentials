@@ -3,7 +3,6 @@ from datetime import datetime
 from typing import Tuple
 
 from django.utils import timezone
-from rest_framework import status
 from rest_framework.response import Response
 
 
@@ -67,16 +66,13 @@ def get_fullname(name: str) -> Tuple[str, str]:
     return first_name, last_name
 
 
-def api_field_errors(
-    field_errors: dict, status_code: int = status.HTTP_400_BAD_REQUEST
-) -> Response:
+def api_field_errors(field_errors: dict, status_code: int) -> Response:
     """
     Build a response with field errors.
 
     Args:
         field_errors (dict): Errors to return.
-        status_code (int, optional): Status code to return. Defaults to
-            status.HTTP_400_BAD_REQUEST.
+        status_code (int): Status code to return.
 
     Returns:
         Response: Response with field errors.
@@ -84,16 +80,28 @@ def api_field_errors(
     return Response(data={"field_errors": field_errors}, status=status_code)
 
 
-def api_error(error: str, status_code: int = status.HTTP_400_BAD_REQUEST) -> Response:
+def api_error(error: str, status_code: int) -> Response:
     """
     Build a response with an error.
 
     Args:
         error (str): Error to return.
-        status_code (int, optional): Status code to return. Defaults to
-            status.HTTP_400_BAD_REQUEST.
+        status_code (int): Status code to return.
 
     Returns:
         Response: Response with an error.
     """
     return Response(data={"error": [error]}, status=status_code)
+
+
+def pydantic_error_to_response(errors: list) -> dict:
+    """
+    Build a dictionary as of Pydantic errors.
+
+    Args:
+        errors (list): Errors of Pydantic.
+
+    Returns:
+        dict: serialized Pydantic errors
+    """
+    return {error["loc"][0]: error["msg"] for error in errors}

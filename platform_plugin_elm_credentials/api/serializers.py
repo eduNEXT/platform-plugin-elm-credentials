@@ -1,10 +1,24 @@
 """Pydantic models for ELMv3 data."""
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 from uuid import uuid4
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_serializer
 
-from platform_plugin_elm_credentials.api.utils import get_current_datetime, to_camel
+from platform_plugin_elm_credentials.api.utils import get_current_datetime, to_camel, to_iso_format
+
+
+class QueryParamsModel(BaseModel):
+    """Pydantic model for query parameters."""
+
+    expired_at: Optional[datetime] = None
+    to_file: bool = True
+
+    @field_serializer("expired_at")
+    def to_iso_format(self, value) -> Optional[str]:
+        if value:
+            return to_iso_format(value)
+        return value
 
 
 class ConfigModel(BaseModel):
@@ -66,8 +80,8 @@ class Issuer(ConfigModel):
     legal_name: dict = Field(validation_alias="legal_name")
 
 
-class ELMv3DataModel(ConfigModel):
-    """Pydantic model for ELMv3 data."""
+class ELMBodyModel(ConfigModel):
+    """Pydantic model for ELM body data."""
 
     id: str = Field(default=f"urn:credential:{uuid4()}")
     type: List[str] = ["VerifiableCredential", "EuropeanDigitalCredential"]
@@ -82,11 +96,17 @@ class ELMv3DataModel(ConfigModel):
         "id": "http://data.europa.eu/snb/model/ap/edc-generic-no-cv",
         "type": "ShaclValidator2017",
     }
+    valid_until: Optional[str] = Field(validation_alias="valid_until")
+    expiration_date: Optional[str] = Field(validation_alias="expiration_date")
     valid_from: str = Field(default_factory=get_current_datetime)
-    valid_until: str = Field(default_factory=get_current_datetime)
-    expiration_date: str = Field(default_factory=get_current_datetime)
     issuance_date: str = Field(default_factory=get_current_datetime)
     issued: str = Field(default_factory=get_current_datetime)
     issuer: Issuer = Field(validation_alias="issuer")
     credential_subject: CredentialSubject = Field(validation_alias="credential_subject")
     delivery_details: DeliveryDetails = Field(validation_alias="delivery_details")
+
+
+class ELMCredentialModel(BaseModel):
+    """Pydantic model for ELM credential."""
+
+    credential: ELMBodyModel = Field(validation_alias="credential")

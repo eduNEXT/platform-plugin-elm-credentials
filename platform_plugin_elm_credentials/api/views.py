@@ -4,12 +4,13 @@ from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthenticat
 from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser
 from opaque_keys import InvalidKeyError
 from opaque_keys.edx.keys import CourseKey
+from pydantic import ValidationError
 from rest_framework import permissions, status
 from rest_framework.views import APIView
 
 from platform_plugin_elm_credentials.api.credential_builder import CredentialBuilder
-from platform_plugin_elm_credentials.api.serializers import ELMv3DataModel
-from platform_plugin_elm_credentials.api.utils import api_error, api_field_errors
+from platform_plugin_elm_credentials.api.serializers import ELMCredentialModel, QueryParamsModel
+from platform_plugin_elm_credentials.api.utils import api_error, api_field_errors, pydantic_error_to_response
 from platform_plugin_elm_credentials.edxapp_wrapper import (
     BearerAuthenticationAllowInactiveUser,
     GeneratedCertificate,
@@ -36,13 +37,17 @@ class ElmCredentialBuilderAPIView(APIView):
             * Path Parameters:
                 * course_id (str): The unique identifier for the course (required).
 
+            * Query Parameters:
+                * expired_at (str): The date and time when the credential expires (optional).
+                * to_file (bool): Whether to download the credential as a JSON file (optional).
+
     `Example Response`:
 
         * GET platform-plugin-elm-credentials/{course_id}/api/credential-builder
 
             * 404:
-                * The supplied course_id does not exists.
-                * The supplied course_id is not found.
+                * The supplied course_id key is not valid.
+                * The course is not found.
                 * The user does not have certificate for the course.
 
             * 200: Returns a JSON file containing ELM credentials for the user and course.
@@ -72,13 +77,13 @@ class ElmCredentialBuilderAPIView(APIView):
         except InvalidKeyError:
             return api_field_errors(
                 {"course_id": f"The supplied {course_id=} key is not valid."},
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_400_BAD_REQUEST,
             )
 
         course = get_course_overview_or_none(course_key)
         if course is None:
             return api_field_errors(
-                {"course_id": f"The supplied {course_id=} is not found."},
+                {"course_id": f"The course with {course_id=} is not found."},
                 status_code=status.HTTP_404_NOT_FOUND,
             )
 
@@ -91,12 +96,27 @@ class ElmCredentialBuilderAPIView(APIView):
                 status_code=status.HTTP_404_NOT_FOUND,
             )
 
-        credential_builder = CredentialBuilder(course, user, certificate)
-        data = ELMv3DataModel(**credential_builder.build())
+        try:
+            query_params = QueryParamsModel(**request.query_params.dict())
+            additional_params = query_params.model_dump()
+        except ValidationError as exc:
+            return api_field_errors(
+                pydantic_error_to_response(exc.errors()),
+                status_code=status.HTTP_400_BAD_REQUEST,
+            )
 
-        serialized_data = data.model_dump_json(indent=2, by_alias=True)
+        credential_builder = CredentialBuilder(
+            course, user, certificate, additional_params
+        )
+        data = ELMCredentialModel(**credential_builder.build())
+
+        serialized_data = data.model_dump_json(
+            indent=2, by_alias=True, exclude_none=True
+        )
 
         response = HttpResponse(serialized_data)
-        response["Content-Disposition"] = 'attachment; filename="credential.json"'
+
+        if additional_params.get("to_file"):
+            response["Content-Disposition"] = 'attachment; filename="credential.json"'
 
         return response
