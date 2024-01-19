@@ -27,6 +27,37 @@ class ConfigModel(BaseModel):
     model_config = ConfigDict(alias_generator=to_camel)
 
 
+class CountryCode(ConfigModel):
+    """Pydantic model for ELMv3 country code."""
+
+    id: str = "http://publications.europa.eu/resource/authority/country/ESP"
+    type: str = "Concept"
+    in_scheme: dict = Field(
+        default={
+            "id": "http://publications.europa.eu/resource/authority/country",
+            "type": "ConceptScheme",
+        },
+        validation_alias="in_scheme",
+    )
+    notation: str = "country"
+
+
+class Address(ConfigModel):
+    """Pydantic model for ELMv3 address."""
+
+    id: str = "urn:epass:address:1"
+    type: str = "Address"
+    country_code: CountryCode = Field(validation_alias="country_code")
+
+
+class Location(ConfigModel):
+    """Pydantic model for ELMv3 location."""
+
+    id: str = "urn:epass:location:1"
+    type: str = "Location"
+    address: Address = Field(validation_alias="address")
+
+
 class AwardingBody(ConfigModel):
     """Pydantic model for ELMv3 awarding body."""
 
@@ -34,6 +65,7 @@ class AwardingBody(ConfigModel):
     type: str = "Organisation"
     alt_label: dict = Field(validation_alias="alt_label")
     legal_name: dict = Field(validation_alias="legal_name")
+    location: Location = Field(validation_alias="location")
 
 
 class AwardedBy(ConfigModel):
@@ -54,6 +86,30 @@ class HasClaim(ConfigModel):
     title: dict = Field(validation_alias="title")
 
 
+class PrimaryLanguage(ConfigModel):
+    """Pydantic model for ELMv3 PrimaryLanguage property."""
+
+    id: str = "http://publications.europa.eu/resource/authority/language/SPA"
+    type: str = "Concept"
+    in_scheme: dict = Field(
+        default={
+            "id": "http://publications.europa.eu/resource/authority/language",
+            "type": "ConceptScheme",
+        },
+        validation_alias="in_scheme",
+    )
+    notation: str = "language"
+
+
+class DisplayParameter(ConfigModel):
+    """Pydantic model for ELMv3 DisplayParameter property."""
+
+    id: str = "urn:epass:displayParameter:1"
+    type: str = "DisplayParameter"
+    primary_language: PrimaryLanguage = Field(validation_alias="primary_language")
+    title: dict = Field(validation_alias="title")
+
+
 class CredentialSubject(ConfigModel):
     """Pydantic model for ELMv3 CredentialSubject property."""
 
@@ -65,12 +121,6 @@ class CredentialSubject(ConfigModel):
     has_claim: HasClaim = Field(validation_alias="has_claim")
 
 
-class DeliveryDetails(ConfigModel):
-    """Pydantic model for ELMv3 DeliveryDetails property."""
-
-    delivery_address: str = Field(validation_alias="delivery_address")
-
-
 class Issuer(ConfigModel):
     """Pydantic model for ELMv3 Issuer property."""
 
@@ -78,6 +128,12 @@ class Issuer(ConfigModel):
     type: str = "Organisation"
     alt_label: dict = Field(validation_alias="alt_label")
     legal_name: dict = Field(validation_alias="legal_name")
+
+
+class DeliveryDetails(ConfigModel):
+    """Pydantic model for ELMv3 DeliveryDetails property."""
+
+    delivery_address: str = Field(validation_alias="delivery_address")
 
 
 class ELMBodyModel(ConfigModel):
@@ -103,10 +159,11 @@ class ELMBodyModel(ConfigModel):
     issued: str = Field(default_factory=get_current_datetime)
     issuer: Issuer = Field(validation_alias="issuer")
     credential_subject: CredentialSubject = Field(validation_alias="credential_subject")
-    delivery_details: DeliveryDetails = Field(validation_alias="delivery_details")
+    display_parameter: DisplayParameter = Field(validation_alias="display_parameter")
 
 
-class ELMCredentialModel(BaseModel):
+class ELMCredentialModel(ConfigModel):
     """Pydantic model for ELM credential."""
 
     credential: ELMBodyModel = Field(validation_alias="credential")
+    delivery_details: DeliveryDetails = Field(validation_alias="delivery_details")

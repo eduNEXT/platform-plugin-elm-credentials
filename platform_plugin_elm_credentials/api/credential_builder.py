@@ -1,11 +1,16 @@
 """Builds ELM credentials."""
 from platform_plugin_elm_credentials.api.serializers import (
+    Address,
     AwardedBy,
     AwardingBody,
+    CountryCode,
     CredentialSubject,
     DeliveryDetails,
+    DisplayParameter,
     HasClaim,
     Issuer,
+    Location,
+    PrimaryLanguage,
 )
 from platform_plugin_elm_credentials.api.utils import get_fullname, to_iso_format
 
@@ -59,6 +64,7 @@ class CredentialBuilder:
         awarding_body = AwardingBody(
             alt_label={"en": self.course.org},
             legal_name={"en": self.course.org},
+            location=Location(address=Address(country_code=CountryCode())),
         )
         awarded_by = AwardedBy(
             awarding_body=awarding_body,
@@ -76,6 +82,9 @@ class CredentialBuilder:
             full_name={"en": self.full_name},
             has_claim=has_claim,
         )
+        display_parameter = DisplayParameter(
+            primary_language=PrimaryLanguage(), title={"en": self.course.display_name}
+        )
         issuer = Issuer(
             alt_label={"en": self.course.org},
             legal_name={"en": self.course.org},
@@ -86,8 +95,9 @@ class CredentialBuilder:
             "credential": {
                 "issuer": issuer,
                 "credential_subject": credential_subject,
-                "delivery_details": delivery_details,
                 "expiration_date": self.additional_params.get("expired_at"),
                 "valid_until": self.additional_params.get("expired_at"),
-            }
+                "display_parameter": display_parameter,
+            },
+            "delivery_details": delivery_details,
         }
