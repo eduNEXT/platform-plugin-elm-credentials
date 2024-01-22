@@ -14,7 +14,7 @@ from platform_plugin_elm_credentials.api.utils import api_error, api_field_error
 from platform_plugin_elm_credentials.edxapp_wrapper import (
     BearerAuthenticationAllowInactiveUser,
     GeneratedCertificate,
-    get_course_overview_or_none,
+    modulestore,
 )
 
 
@@ -80,8 +80,8 @@ class ElmCredentialBuilderAPIView(APIView):
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
-        course = get_course_overview_or_none(course_key)
-        if course is None:
+        course_block = modulestore().get_course(course_key)
+        if course_block is None:
             return api_field_errors(
                 {"course_id": f"The course with {course_id=} is not found."},
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -106,7 +106,7 @@ class ElmCredentialBuilderAPIView(APIView):
             )
 
         credential_builder = CredentialBuilder(
-            course, user, certificate, additional_params
+            course_block, user, certificate, additional_params
         )
         data = ELMCredentialModel(**credential_builder.build())
 

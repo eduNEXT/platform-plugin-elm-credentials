@@ -66,8 +66,8 @@ TEMPLATES = [
 PLATFORM_PLUGIN_ELM_CREDENTIALS_AUTHENTICATION_BACKEND = (
     "platform_plugin_elm_credentials.edxapp_wrapper.backends.authentication_p_v1_test"
 )
-PLATFORM_PLUGIN_ELM_CREDENTIALS_COURSE_OVERVIEWS_BACKEND = (
-    "platform_plugin_elm_credentials.edxapp_wrapper.backends.course_overviews_p_v1_test"
+PLATFORM_PLUGIN_ELM_CREDENTIALS_MODULESTORE_BACKEND = (
+    "platform_plugin_elm_credentials.edxapp_wrapper.backends.modulestore_p_v1_test"
 )
 PLATFORM_PLUGIN_ELM_CREDENTIALS_CERTIFICATES_BACKEND = (
     "platform_plugin_elm_credentials.edxapp_wrapper.backends.certificates_p_v1_test"

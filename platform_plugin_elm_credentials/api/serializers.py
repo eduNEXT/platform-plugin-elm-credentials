@@ -30,7 +30,7 @@ class ConfigModel(BaseModel):
 class CountryCode(ConfigModel):
     """Pydantic model for ELMv3 country code."""
 
-    id: str = "http://publications.europa.eu/resource/authority/country/ESP"
+    id: str
     type: str = "Concept"
     in_scheme: dict = Field(
         default={
@@ -40,6 +40,10 @@ class CountryCode(ConfigModel):
         validation_alias="in_scheme",
     )
     notation: str = "country"
+
+    @field_serializer("id")
+    def get_id(self, value):
+        return f"http://publications.europa.eu/resource/authority/country/{value}"
 
 
 class Address(ConfigModel):
@@ -89,7 +93,7 @@ class HasClaim(ConfigModel):
 class PrimaryLanguage(ConfigModel):
     """Pydantic model for ELMv3 PrimaryLanguage property."""
 
-    id: str = "http://publications.europa.eu/resource/authority/language/SPA"
+    id: str
     type: str = "Concept"
     in_scheme: dict = Field(
         default={
@@ -99,6 +103,10 @@ class PrimaryLanguage(ConfigModel):
         validation_alias="in_scheme",
     )
     notation: str = "language"
+
+    @field_serializer("id")
+    def get_id(self, value):
+        return f"http://publications.europa.eu/resource/authority/language/{value}"
 
 
 class DisplayParameter(ConfigModel):
