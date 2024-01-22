@@ -9,7 +9,11 @@ from platform_plugin_elm_credentials.api.utils import get_current_datetime, to_c
 
 
 class QueryParamsModel(BaseModel):
-    """Pydantic model for query parameters."""
+    """Pydantic model for query parameters.
+
+    The purpose of this model is to validate the query parameters and
+    convert them to the appropriate type.
+    """
 
     expired_at: Optional[datetime] = None
     to_file: bool = True
@@ -22,13 +26,24 @@ class QueryParamsModel(BaseModel):
 
 
 class ConfigModel(BaseModel):
-    """Pydantic model with custom configuration."""
+    """Pydantic model with custom configuration.
+
+    The purpose of this model is to set the custom configuration for all
+    the models that inherit from it.
+
+    The custom configuration is set to:
+        * alias_generator: to_camel (converts the field names from snake_case to camelCase)
+    """
 
     model_config = ConfigDict(alias_generator=to_camel)
 
 
 class CountryCode(ConfigModel):
-    """Pydantic model for ELMv3 country code."""
+    """Pydantic model for ELMv3 country code.
+
+    Stores the country code of the organisation in the format required by ELMv3.
+    This property is used in the Address model.
+    """
 
     id: str
     type: str = "Concept"
@@ -47,7 +62,11 @@ class CountryCode(ConfigModel):
 
 
 class Address(ConfigModel):
-    """Pydantic model for ELMv3 address."""
+    """Pydantic model for ELMv3 address.
+
+    Stores the address of the organisation in the format required by ELMv3.
+    This property is used in the Location model.
+    """
 
     id: str = "urn:epass:address:1"
     type: str = "Address"
@@ -55,7 +74,11 @@ class Address(ConfigModel):
 
 
 class Location(ConfigModel):
-    """Pydantic model for ELMv3 location."""
+    """Pydantic model for ELMv3 location.
+
+    Stores the location of the organisation in the format required by ELMv3.
+    This property is used in the AwardingBody model.
+    """
 
     id: str = "urn:epass:location:1"
     type: str = "Location"
@@ -63,7 +86,11 @@ class Location(ConfigModel):
 
 
 class AwardingBody(ConfigModel):
-    """Pydantic model for ELMv3 awarding body."""
+    """Pydantic model for ELMv3 awarding body.
+
+    Stores the awarding body of the credential in the format required by ELMv3.
+    This property is used in the AwardedBy model.
+    """
 
     id: str = "urn:epass:org:1"
     type: str = "Organisation"
@@ -73,7 +100,11 @@ class AwardingBody(ConfigModel):
 
 
 class AwardedBy(ConfigModel):
-    """Pydantic model for ELMv3 AwardedBy property."""
+    """Pydantic model for ELMv3 AwardedBy property.
+
+    Stores the awarded by of the credential in the format required by ELMv3.
+    This property is used in the HasClaim model.
+    """
 
     id: str = "urn:epass:awardingProcess:1"
     type: str = "AwardingProcess"
@@ -82,7 +113,11 @@ class AwardedBy(ConfigModel):
 
 
 class HasClaim(ConfigModel):
-    """Pydantic model for ELMv3 HasClaim property."""
+    """Pydantic model for ELMv3 HasClaim property.
+
+    Stores the has claim of the credential in the format required by ELMv3.
+    This property is used in the CredentialSubject model.
+    """
 
     id: str = "urn:epass:learningAchievement:1"
     type: str = "LearningAchievement"
@@ -91,7 +126,11 @@ class HasClaim(ConfigModel):
 
 
 class PrimaryLanguage(ConfigModel):
-    """Pydantic model for ELMv3 PrimaryLanguage property."""
+    """Pydantic model for ELMv3 PrimaryLanguage property.
+
+    Stores the primary language of the credential in the format required by ELMv3.
+    This property is used in the DisplayParameter model.
+    """
 
     id: str
     type: str = "Concept"
@@ -110,7 +149,11 @@ class PrimaryLanguage(ConfigModel):
 
 
 class DisplayParameter(ConfigModel):
-    """Pydantic model for ELMv3 DisplayParameter property."""
+    """Pydantic model for ELMv3 DisplayParameter property.
+
+    Stores the display parameter of the credential in the format required by ELMv3.
+    This property is used in the ELMBodyModel model.
+    """
 
     id: str = "urn:epass:displayParameter:1"
     type: str = "DisplayParameter"
@@ -119,7 +162,11 @@ class DisplayParameter(ConfigModel):
 
 
 class CredentialSubject(ConfigModel):
-    """Pydantic model for ELMv3 CredentialSubject property."""
+    """Pydantic model for ELMv3 CredentialSubject property.
+
+    Stores the credential subject of the credential in the format required by ELMv3.
+    This property is used in the ELMBodyModel model.
+    """
 
     id: str = "urn:epass:person:1"
     type: str = "Person"
@@ -130,7 +177,11 @@ class CredentialSubject(ConfigModel):
 
 
 class Issuer(ConfigModel):
-    """Pydantic model for ELMv3 Issuer property."""
+    """Pydantic model for ELMv3 Issuer property.
+
+    Stores the issuer of the credential in the format required by ELMv3.
+    This property is used in the ELMBodyModel model.
+    """
 
     id: str = Field(default=f"urn:epass:org:{uuid4()}")
     type: str = "Organisation"
@@ -139,13 +190,20 @@ class Issuer(ConfigModel):
 
 
 class DeliveryDetails(ConfigModel):
-    """Pydantic model for ELMv3 DeliveryDetails property."""
+    """Pydantic model for ELMv3 DeliveryDetails property.
+
+    Stores the delivery details of the credential in the format required by ELMv3.
+    This property is used in the ELMCredentialModel model.
+    """
 
     delivery_address: str = Field(validation_alias="delivery_address")
 
 
 class ELMBodyModel(ConfigModel):
-    """Pydantic model for ELM body data."""
+    """Pydantic model for ELM body data.
+
+    Stores all the data in the credential property required by ELMv3.
+    """
 
     id: str = Field(default=f"urn:credential:{uuid4()}")
     type: List[str] = ["VerifiableCredential", "EuropeanDigitalCredential"]
@@ -171,7 +229,10 @@ class ELMBodyModel(ConfigModel):
 
 
 class ELMCredentialModel(ConfigModel):
-    """Pydantic model for ELM credential."""
+    """Pydantic model for ELM credential.
+
+    Stores the ELM credential in the format required by ELMv3.
+    """
 
     credential: ELMBodyModel = Field(validation_alias="credential")
     delivery_details: DeliveryDetails = Field(validation_alias="delivery_details")

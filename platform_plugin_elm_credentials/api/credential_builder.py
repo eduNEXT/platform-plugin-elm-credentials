@@ -29,6 +29,7 @@ class CredentialBuilder:
         user (User): The user for whom credentials are being built.
         certificate (GeneratedCertificate): The certificate associated with the user's completion of the course.
         additional_params (dict): Additional parameters for the credential.
+        elm_credential_defaults (dict): Default values for the credential.
 
     Properties:
         full_name (str): The full name of the user.
