@@ -62,6 +62,8 @@ TEMPLATES = [
     }
 ]
 
+LANGUAGE_CODE = "es"
+
 # Settings for the plugin
 PLATFORM_PLUGIN_ELM_CREDENTIALS_AUTHENTICATION_BACKEND = (
     "platform_plugin_elm_credentials.edxapp_wrapper.backends.authentication_p_v1_test"
@@ -72,3 +74,12 @@ PLATFORM_PLUGIN_ELM_CREDENTIALS_MODULESTORE_BACKEND = (
 PLATFORM_PLUGIN_ELM_CREDENTIALS_CERTIFICATES_BACKEND = (
     "platform_plugin_elm_credentials.edxapp_wrapper.backends.certificates_p_v1_test"
 )
+ELM_CREDENTIALS_DEFAULTS = {
+    "primary_language_code": "ENG",
+    "primary_language_map": {
+        "fr": "FRA",
+        "de": "DEU",
+    },
+    "org_country_code": "USA",
+    "issuer_id": "urn:epass:org:12345",
+}
