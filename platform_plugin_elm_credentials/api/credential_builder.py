@@ -1,4 +1,6 @@
 """Builds ELM credentials."""
+from uuid import uuid4
+
 from django.conf import settings
 
 from platform_plugin_elm_credentials.api.serializers import (
@@ -35,6 +37,7 @@ class CredentialBuilder:
         full_name (str): The full name of the user.
         primary_language (PrimaryLanguage): The primary language of the credential.
         org_country_code (CountryCode): The country code of the organisation in the credential.
+        issuer (Issuer): The issuer of the credential.
 
     Methods:
         build() -> dict:
@@ -107,6 +110,21 @@ class CredentialBuilder:
         org_country_code = self.credential_settings.get("org_country_code")
         return CountryCode(id=org_country_code or self.ORG_COUNTRY_CODE)
 
+    @property
+    def issuer(self) -> Issuer:
+        """
+        Get the issuer of the credential.
+
+        Returns:
+            Issuer: The issuer of the credential.
+        """
+        issuer_id = self.credential_settings.get("issuer_id")
+        return Issuer(
+            id=issuer_id or uuid4().hex,
+            alt_label={"en": self.course_block.org},
+            legal_name={"en": self.course_block.org},
+        )
+
     def build(self) -> dict:
         """
         Build the credential.
@@ -141,15 +159,11 @@ class CredentialBuilder:
             primary_language=self.primary_language,
             title={"en": self.course_block.display_name},
         )
-        issuer = Issuer(
-            alt_label={"en": self.course_block.org},
-            legal_name={"en": self.course_block.org},
-        )
         delivery_details = DeliveryDetails(delivery_address=self.user.email)
 
         return {
             "credential": {
-                "issuer": issuer,
+                "issuer": self.issuer,
                 "credential_subject": credential_subject,
                 "expiration_date": self.additional_params.get("expired_at"),
                 "valid_until": self.additional_params.get("expired_at"),

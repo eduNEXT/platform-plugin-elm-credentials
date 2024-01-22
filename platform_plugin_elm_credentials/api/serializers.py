@@ -183,10 +183,14 @@ class Issuer(ConfigModel):
     This property is used in the ELMBodyModel model.
     """
 
-    id: str = Field(default=f"urn:epass:org:{uuid4()}")
+    id: str
     type: str = "Organisation"
     alt_label: dict = Field(validation_alias="alt_label")
     legal_name: dict = Field(validation_alias="legal_name")
+
+    @field_serializer("id")
+    def get_id(self, value):
+        return f"urn:epass:org:{value}"
 
 
 class DeliveryDetails(ConfigModel):
