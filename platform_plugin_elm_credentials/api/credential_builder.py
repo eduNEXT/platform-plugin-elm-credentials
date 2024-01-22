@@ -45,13 +45,17 @@ class CredentialBuilder:
         "en": "ENG",
         "es": "SPA",
     }
+    PRIMARY_LANGUAGE = "SPA"
+    ORG_COUNTRY_CODE = "ESP"
 
     def __init__(self, course_block, user, certificate, additional_params):
         self.course_block = course_block
         self.user = user
         self.certificate = certificate
         self.additional_params = additional_params
-        self.elm_credential_defaults = getattr(settings, "ELM_CREDENTIALS_DEFAULTS", {})
+        self.credential_settings = self.course_block.other_course_settings.get(
+            "ELM_CREDENTIALS_DEFAULTS", {}
+        ) or getattr(settings, "ELM_CREDENTIALS_DEFAULTS", {})
 
     @property
     def full_name(self) -> str:
@@ -69,26 +73,24 @@ class CredentialBuilder:
         Get the primary language of the credential.
 
         First, the primary language is retrieved from the course settings. If it is not found,
-        the primary language is retrieved from the `LANGUAGE_CODE` Django setting.
+        the primary language is retrieved from the Django setting. If it is not found,
+        use the default primary language.
 
-        If you want to use a language code other than those in `LANGUAGE_CODE_MAPPING`, you can
-        add a `PRIMARY_LANGUAGE_MAPPING` dictionary to the `ELM_CREDENTIALS_DEFAULTS` setting.
+        If you want to use a language code other than those in `LANGUAGE_CODE_MAP`, you can
+        add a `primary_language_map` dictionary to the `ELM_CREDENTIALS_DEFAULTS` setting.
 
         Returns:
             PrimaryLanguage: The primary language of the credential.
         """
-        credential_primary_language = self.course_block.other_course_settings.get(
-            "elm_credential_primary_language"
+        primary_language_code = self.credential_settings.get("primary_language_code")
+        primary_language_map = self.credential_settings.get("primary_language_map", {})
+
+        self.LANGUAGE_CODE_MAP.update(primary_language_map)
+
+        maped_primary_language = primary_language_code or self.LANGUAGE_CODE_MAP.get(
+            getattr(settings, "LANGUAGE_CODE", "en"), self.PRIMARY_LANGUAGE
         )
-        language_code = getattr(settings, "LANGUAGE_CODE", "es")
-        primary_language_mapping = self.elm_credential_defaults.get(
-            "PRIMARY_LANGUAGE_MAPPING", {}
-        )
-        self.LANGUAGE_CODE_MAP.update(primary_language_mapping)
-        primary_language_id = credential_primary_language or self.LANGUAGE_CODE_MAP.get(
-            language_code, "SPA"
-        )
-        return PrimaryLanguage(id=primary_language_id)
+        return PrimaryLanguage(id=maped_primary_language)
 
     @property
     def org_country_code(self) -> CountryCode:
@@ -96,17 +98,14 @@ class CredentialBuilder:
         Get the country code of the organisation in the credential.
 
         First, the country code is retrieved from the course settings. If it is not found,
-        the country code is retrieved from the `ORG_COUNTRY_CODE_ID` Django setting. If it is
-        not found, use the default country code.
+        the primary language is retrieved from the Django setting. If it is not found,
+        use the default country code.
 
         Returns:
             CountryCode: The country code of the credential.
         """
-        course_setting = self.course_block.other_course_settings.get(
-            "elm_credential_org_country_code"
-        )
-        django_setting = self.elm_credential_defaults.get("ORG_COUNTRY_CODE")
-        return CountryCode(id=course_setting or django_setting or "ESP")
+        org_country_code = self.credential_settings.get("org_country_code")
+        return CountryCode(id=org_country_code or self.ORG_COUNTRY_CODE)
 
     def build(self) -> dict:
         """
