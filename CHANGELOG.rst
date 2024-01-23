@@ -16,7 +16,16 @@ Unreleased
 
 *
 
-0.1.0 – 2024-01-15
+0.2.0 - 2024-01-23
+
+Added
+=====
+
+* Add api endpoint to generate a credential in a JSON file with ELMv3 format.
+* Add unit tests for endpoint and utils.
+* Add documentation for the plugin.
+
+0.1.0 - 2024-01-15
 **********************************************
 
 Added
