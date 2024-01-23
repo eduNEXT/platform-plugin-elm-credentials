@@ -15,10 +15,10 @@ class QueryParamsModel(BaseModel):
     convert them to the appropriate type.
     """
 
-    expired_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
     to_file: bool = True
 
-    @field_serializer("expired_at")
+    @field_serializer("expires_at")
     def to_iso_format(self, value) -> Optional[str]:
         if value:
             return to_iso_format(value)

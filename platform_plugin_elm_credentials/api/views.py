@@ -38,7 +38,7 @@ class ElmCredentialBuilderAPIView(APIView):
                 * course_id (str): The unique identifier for the course (required).
 
             * Query Parameters:
-                * expired_at (str): The date and time when the credential expires (optional).
+                * expires_at (str): The date and time when the credential expires (optional).
                 * to_file (bool): Whether to download the credential as a JSON file (optional).
 
     `Example Response`:

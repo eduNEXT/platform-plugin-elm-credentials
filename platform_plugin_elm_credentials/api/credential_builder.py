@@ -120,7 +120,7 @@ class CredentialBuilder:
         """
         issuer_id = self.credential_settings.get("issuer_id")
         return Issuer(
-            id=issuer_id or uuid4().hex,
+            id=issuer_id or str(uuid4()),
             alt_label={"en": self.course_block.org},
             legal_name={"en": self.course_block.org},
         )
@@ -165,8 +165,8 @@ class CredentialBuilder:
             "credential": {
                 "issuer": self.issuer,
                 "credential_subject": credential_subject,
-                "expiration_date": self.additional_params.get("expired_at"),
-                "valid_until": self.additional_params.get("expired_at"),
+                "expiration_date": self.additional_params.get("expires_at"),
+                "valid_until": self.additional_params.get("expires_at"),
                 "display_parameter": display_parameter,
             },
             "delivery_details": delivery_details,
