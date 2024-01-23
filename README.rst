@@ -111,7 +111,8 @@ Using the API
 enabled. You should consider the following:
 
 1. You should configure from the Django administrator the **coursemode**, the
-   **certificate generation configuration**, and the **certificate html view configuration**
+   **certificate generation configuration**, and the **certificate html view
+   configuration**.
 2. You should activate certificates in the course from Studio in the
    **Settings** > **Certificates**.
 
@@ -170,15 +171,17 @@ following:
 
 * **primary_language_code**: Primary language code of the credential. It is
   used to generate the ``primaryLanguage`` property of the ELMv3 format. By
-  default, the language defined in the platform is used.
+  default, the language defined by the Django setting ``LANGUAGE_CODE`` is
+  used.
 * **primary_language_map**: Map of the primary language code with the language.
   This settings is useful when the language defined in the primary language
   code is different from English or Spanish.
 * **org_country_code**: Country code of the organization. It is used to
   generate the ``countryCode`` property of the ELMv3 format. By default, it is
   ``ESP``.
-* **issuer_id**: ID of the issuer. It is used to generate the ``issuer`` property
-  of the ELMv3 format. By default, a random UUID is generated.
+* **issuer_id**: ID of the issuer. It is used to generate the ``issuer``
+  property of the ELMv3 format. By default, a random in-memory UUID is
+  generated.
 
 Default settings are defined for **Unidigital project**. If you want to change
 the settings, you can do this in two ways:
