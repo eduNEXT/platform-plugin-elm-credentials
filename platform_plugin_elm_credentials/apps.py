@@ -4,6 +4,11 @@ platform_plugin_elm_credentials Django application initialization.
 
 from django.apps import AppConfig
 
+try:
+    from openedx.core.constants import COURSE_ID_PATTERN
+except ImportError:
+    COURSE_ID_PATTERN = object
+
 
 class PlatformPluginElmCredentialsConfig(AppConfig):
     """
@@ -17,7 +22,7 @@ class PlatformPluginElmCredentialsConfig(AppConfig):
         "url_config": {
             "lms.djangoapp": {
                 "namespace": "platform-plugin-elm-credentials",
-                "regex": "platform-plugin-elm-credentials/api/",
+                "regex": rf"platform-plugin-elm-credentials/{COURSE_ID_PATTERN}/api/",
                 "relative_path": "urls",
             },
         },
