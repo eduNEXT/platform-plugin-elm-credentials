@@ -51,6 +51,8 @@ cryptography==41.0.7
     # via
     #   -r requirements/test.txt
     #   pyjwt
+ddt==1.7.1
+    # via -r requirements/test.txt
 dill==0.3.7
     # via pylint
 django==3.2.23

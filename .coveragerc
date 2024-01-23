@@ -8,3 +8,6 @@ omit =
     *admin.py
     */static/*
     */templates/*
+    */tests/*
+    */settings/*
+    */edxapp_wrapper/*
