@@ -230,11 +230,11 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         generated_certificate_mock.certificate_for_student.return_value = Mock()
 
         self.request = self.factory.get(
-            self.url, {"expired_at": "2025-25-25", "to_file": 100}
+            self.url, {"expires_at": "2025-25-25", "to_file": 100}
         )
         force_authenticate(self.request, user=self.user)
         response = self.view(self.request, course_id=self.course_id)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("expired_at", response.data["field_errors"])
+        self.assertIn("expires_at", response.data["field_errors"])
         self.assertIn("to_file", response.data["field_errors"])
