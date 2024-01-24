@@ -17,3 +17,6 @@ def plugin_settings(settings):
     settings.PLATFORM_PLUGIN_ELM_CREDENTIALS_CERTIFICATES_BACKEND = (
         "platform_plugin_elm_credentials.edxapp_wrapper.backends.certificates_p_v1"
     )
+    settings.PLATFORM_PLUGIN_ELM_CREDENTIALS_STUDENT_BACKEND = (
+        "platform_plugin_elm_credentials.edxapp_wrapper.backends.student_p_v1"
+    )

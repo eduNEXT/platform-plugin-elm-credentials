@@ -14,24 +14,24 @@ class TestSerializers(TestCase):
 
     @data(
         (
-            {},
-            {"expires_at": None, "to_file": True},
+            {"username": "john_doe"},
+            {"username": "john_doe", "expires_at": None, "to_file": True},
         ),
         (
-            {"to_file": False},
-            {"expires_at": None, "to_file": False},
+            {"username": "john_doe", "to_file": False},
+            {"username": "john_doe", "expires_at": None, "to_file": False},
         ),
         (
-            {"expires_at": mock_expires_at},
-            {"expires_at": mock_expires_at, "to_file": True},
+            {"username": "john_doe", "expires_at": mock_expires_at},
+            {"username": "john_doe", "expires_at": mock_expires_at, "to_file": True},
         ),
         (
-            {"expires_at": mock_expires_at, "to_file": True},
-            {"expires_at": mock_expires_at, "to_file": True},
+            {"username": "john_doe", "expires_at": mock_expires_at, "to_file": True},
+            {"username": "john_doe", "expires_at": mock_expires_at, "to_file": True},
         ),
         (
-            {"expires_at": mock_expires_at, "to_file": False},
-            {"expires_at": mock_expires_at, "to_file": False},
+            {"username": "john_doe", "expires_at": mock_expires_at, "to_file": False},
+            {"username": "john_doe", "expires_at": mock_expires_at, "to_file": False},
         ),
     )
     @unpack
