@@ -125,7 +125,7 @@ class ElmCredentialBuilderAPIView(APIView):
             credential_user = get_user_by_username_or_email(credential_username)
         except User.DoesNotExist:
             return api_field_errors(
-                {"username": f"The username='{credential_username}' does not exists."},
+                {"username": f"The username='{credential_username}' does not exist."},
                 status_code=status.HTTP_404_NOT_FOUND,
             )
 

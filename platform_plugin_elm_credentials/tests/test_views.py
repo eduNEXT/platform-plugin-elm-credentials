@@ -347,7 +347,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         course_instructor_role_mock: Mock,
         get_user_by_username_or_email_mock: Mock,
     ):
-        """Test GET request for Elm credentials with user does not exists."""
+        """Test GET request for Elm credentials with user does not exist."""
         modulestore_mock.return_value.get_course.return_value = self.course
         course_staff_role_mock.return_value.has_user.return_value = True
         course_instructor_role_mock.return_value.has_user.return_value = True
@@ -358,5 +358,5 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(
             response.data["field_errors"]["username"],
-            "The username='john_doe' does not exists.",
+            "The username='john_doe' does not exist.",
         )
