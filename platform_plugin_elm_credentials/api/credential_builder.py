@@ -11,10 +11,16 @@ from platform_plugin_elm_credentials.api.serializers import (
     CredentialSubject,
     DeliveryDetails,
     DisplayParameter,
+    Grade,
     HasClaim,
+    IdVerification,
     Issuer,
+    Language,
     Location,
+    Mode,
     PrimaryLanguage,
+    ProvenBy,
+    SpecifiedBy,
 )
 from platform_plugin_elm_credentials.api.utils import get_fullname, to_iso_format
 
@@ -35,11 +41,16 @@ class CredentialBuilder:
 
     Properties:
         full_name (str): The full name of the user.
+        language (Language): The language of the credential.
         primary_language (PrimaryLanguage): The primary language of the credential.
         org_country_code (CountryCode): The country code of the organisation in the credential.
+        title (dict): The title of the credential.
+        grade (Grade): The grade of the credential.
         issuer (Issuer): The issuer of the credential.
 
     Methods:
+        get_maped_language() -> str:
+            Get the language code mapped according to the language code defined.
         build() -> dict:
             Constructs and returns the ELM credential in the form of a dictionary.
     """
@@ -48,7 +59,7 @@ class CredentialBuilder:
         "en": "ENG",
         "es": "SPA",
     }
-    PRIMARY_LANGUAGE = "SPA"
+    LANGUAGE = "SPA"
     ORG_COUNTRY_CODE = "ESP"
 
     def __init__(self, course_block, user, certificate, additional_params):
@@ -71,29 +82,24 @@ class CredentialBuilder:
         return self.user.profile.name
 
     @property
+    def language(self) -> Language:
+        """
+        Get the language of the credential.
+
+        Returns:
+            Language: The language of the credential.
+        """
+        return Language(id=self.get_maped_language())
+
+    @property
     def primary_language(self) -> PrimaryLanguage:
         """
         Get the primary language of the credential.
 
-        First, the primary language is retrieved from the course settings. If it is not found,
-        the primary language is retrieved from the Django setting. If it is not found,
-        use the default primary language.
-
-        If you want to use a language code other than those in `LANGUAGE_CODE_MAP`, you can
-        add a `primary_language_map` dictionary to the `ELM_CREDENTIALS_DEFAULTS` setting.
-
         Returns:
             PrimaryLanguage: The primary language of the credential.
         """
-        primary_language_code = self.credential_settings.get("primary_language_code")
-        primary_language_map = self.credential_settings.get("primary_language_map", {})
-
-        self.LANGUAGE_CODE_MAP.update(primary_language_map)
-
-        maped_primary_language = primary_language_code or self.LANGUAGE_CODE_MAP.get(
-            getattr(settings, "LANGUAGE_CODE", "en"), self.PRIMARY_LANGUAGE
-        )
-        return PrimaryLanguage(id=maped_primary_language)
+        return PrimaryLanguage(id=self.get_maped_language())
 
     @property
     def org_country_code(self) -> CountryCode:
@@ -111,6 +117,29 @@ class CredentialBuilder:
         return CountryCode(id=org_country_code or self.ORG_COUNTRY_CODE)
 
     @property
+    def title(self) -> dict:
+        """
+        Get the title of the credential.
+
+        Returns:
+            str: The title of the credential.
+        """
+        return {
+            "en": f"Course certificate for passing {self.course_block.display_name} course"
+        }
+
+    @property
+    def grade(self) -> Grade:
+        """
+        Get the grade of the credential.
+
+        Returns:
+            Grade: The grade of the credential.
+        """
+        note = str(round(float(self.certificate.grade) * 100, 2))
+        return Grade(note_literal={"en": note})
+
+    @property
     def issuer(self) -> Issuer:
         """
         Get the issuer of the credential.
@@ -123,6 +152,29 @@ class CredentialBuilder:
             id=issuer_id or str(uuid4()),
             alt_label={"en": self.course_block.org},
             legal_name={"en": self.course_block.org},
+        )
+
+    def get_maped_language(self) -> str:
+        """
+        Get the language code mapped according to the language code defined.
+
+        First, the language is retrieved from the course settings. If it is not found,
+        the language is retrieved from the Django setting. If it is not found, use
+        the default language.
+
+        If you want to use a language code other than those in `LANGUAGE_CODE_MAP`, you can
+        add a `language_map` dictionary to the `ELM_CREDENTIALS_DEFAULTS` setting.
+
+        Returns:
+            str: The language code
+        """
+        language_code = self.credential_settings.get("language_code")
+        language_map = self.credential_settings.get("language_map", {})
+
+        self.LANGUAGE_CODE_MAP.update(language_map)
+
+        return language_code or self.LANGUAGE_CODE_MAP.get(
+            getattr(settings, "LANGUAGE_CODE", "en"), self.LANGUAGE
         )
 
     def build(self) -> dict:
@@ -143,11 +195,22 @@ class CredentialBuilder:
             awarding_body=awarding_body,
             awarding_date=to_iso_format(self.certificate.created_date),
         )
-        has_claim = HasClaim(
+        specified_by = SpecifiedBy(
+            title=self.title,
+            language=self.language,
+            mode=Mode(),
+        )
+        proven_by = ProvenBy(
             awarded_by=awarded_by,
-            title={
-                "en": f"Course certificate for passing {self.course_block.display_name} course"
-            },
+            title=self.title,
+            grade=self.grade,
+            id_verification=IdVerification(),
+        )
+        has_claim = HasClaim(
+            proven_by=proven_by,
+            awarded_by=awarded_by,
+            title=self.title,
+            specified_by=specified_by,
         )
         credential_subject = CredentialSubject(
             given_name={"en": given_name},
