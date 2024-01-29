@@ -16,6 +16,13 @@ Unreleased
 
 *
 
+0.2.1 - 2024-01-29
+
+Changed
+=======
+
+* Allow instructors to generate credentials for the students in the course.
+
 0.2.0 - 2024-01-23
 
 Added
