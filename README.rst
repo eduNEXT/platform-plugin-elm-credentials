@@ -154,6 +154,8 @@ Finally, you are ready to use the API. The next endpoint is available:
 
   **Query parameters**
 
+  - ``username`` (required): The username of the user to generate the
+    credential for.
   - ``expires_at`` (optional): Date of the expiration of the credential. It
     must be in the format ``YYYY-MM-DDTHH:mm:ss±hh:mm``. This parameter
     modifies the properties ``validUntil`` and ``expirationDate`` of the ELMv3
@@ -169,13 +171,13 @@ Configuring plugin settings
 You can configure some settings for the plugin. The available settings are the
 following:
 
-* **primary_language_code**: Primary language code of the credential. It is
-  used to generate the ``primaryLanguage`` property of the ELMv3 format. By
+* **language_code**: Language code of the credential. It is used to generate
+  the ``Language`` and ``primaryLanguage`` property of the ELMv3 format. By
   default, the language defined by the Django setting ``LANGUAGE_CODE`` is
   used.
-* **primary_language_map**: Map of the primary language code with the language.
-  This settings is useful when the language defined in the primary language
-  code is different from English or Spanish.
+* **language_map**: Map of the language code with the language. This settings
+  is useful when the language defined in the language code is different from
+  English or Spanish.
 * **org_country_code**: Country code of the organization. It is used to
   generate the ``countryCode`` property of the ELMv3 format. By default, it is
   ``ESP``.
@@ -194,8 +196,8 @@ the settings, you can do this in two ways:
     {
       ...
       "ELM_CREDENTIALS_DEFAULTS": {
-        "primary_language_code": "POR",
-        "primary_language_map": {"fr": "FRA", "de": "DEU"},
+        "language_code": "POR",
+        "language_map": {"fr": "FRA", "de": "DEU"},
         "org_country_code": "PRT",
         "issuer_id": "8fb2a434-e46b-4fd9-80d1-ce7ff11c0048"
       }
@@ -206,8 +208,8 @@ the settings, you can do this in two ways:
    .. code-block:: python
 
     ELM_CREDENTIALS_DEFAULTS = {
-      "primary_language_code": "POR",
-      "primary_language_map": {"fr": "FRA", "de": "DEU"},
+      "language_code": "POR",
+      "language_map": {"fr": "FRA", "de": "DEU"},
       "org_country_code": "PRT",
       "issuer_id": "8fb2a434-e46b-4fd9-80d1-ce7ff11c0048",
     }

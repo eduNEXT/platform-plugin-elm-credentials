@@ -15,6 +15,7 @@ class QueryParamsModel(BaseModel):
     convert them to the appropriate type.
     """
 
+    username: str
     expires_at: Optional[datetime] = None
     to_file: bool = True
 
@@ -36,6 +37,28 @@ class ConfigModel(BaseModel):
     """
 
     model_config = ConfigDict(alias_generator=to_camel)
+
+
+class LanguageBase(ConfigModel):
+    """Pydantic model for language.
+
+    This model is used as a base for the Language and PrimaryLanguage models.
+    """
+
+    id: str
+    type: str = "Concept"
+    in_scheme: dict = Field(
+        default={
+            "id": "http://publications.europa.eu/resource/authority/language",
+            "type": "ConceptScheme",
+        },
+        validation_alias="in_scheme",
+    )
+    notation: str = "language"
+
+    @field_serializer("id")
+    def get_id(self, value):
+        return f"http://publications.europa.eu/resource/authority/language/{value}"
 
 
 class CountryCode(ConfigModel):
@@ -85,6 +108,33 @@ class Location(ConfigModel):
     address: Address = Field(validation_alias="address")
 
 
+class Mode(ConfigModel):
+    """Pydantic model for ELMv3 Mode property.
+
+    Stores the mode of the credential in the format required by ELMv3.
+    This property is used in the SpecifiedBy model.
+    """
+
+    id: str = "http://data.europa.eu/snb/learning-assessment/920fbb3cbe"
+    type: str = "Concept"
+    in_scheme: dict = Field(
+        default={
+            "id": "http://data.europa.eu/snb/learning-assessment/25831c2",
+            "type": "ConceptScheme",
+        },
+        validation_alias="in_scheme",
+    )
+    pref_label: dict = Field(default={"en": "Online"}, validation_alias="pref_label")
+
+
+class Language(LanguageBase):
+    """Pydantic model for ELMv3 Language property.
+
+    Stores the language of the credential in the format required by ELMv3.
+    This property is used in the SpecifiedBy model.
+    """
+
+
 class AwardingBody(ConfigModel):
     """Pydantic model for ELMv3 awarding body.
 
@@ -99,17 +149,88 @@ class AwardingBody(ConfigModel):
     location: Location = Field(validation_alias="location")
 
 
+class IdVerification(ConfigModel):
+    """Pydantic model for ELMv3 IdVerification property.
+
+    Stores the id verification of the credential in the format required by ELMv3.
+    This property is used in the ProvenBy model.
+    """
+
+    id: str = "http://data.europa.eu/snb/supervision-verification/df2880c5cb"
+    type: str = "Concept"
+    in_scheme: dict = Field(
+        default={
+            "id": "http://data.europa.eu/snb/supervision-verification/25831c2",
+            "type": "ConceptScheme",
+        },
+        validation_alias="in_scheme",
+    )
+    pref_label: dict = Field(
+        default={"en": "Unsupervised with ID verification"},
+        validation_alias="pref_label",
+    )
+
+
+class Grade(ConfigModel):
+    """Pydantic model for ELMv3 Grade property.
+
+    Stores the grade of the credential in the format required by ELMv3.
+    This property is used in the ProvenBy model.
+    """
+
+    id: str = "urn:epass:note:1"
+    type: str = "Note"
+    note_literal: dict = Field(validation_alias="note_literal")
+
+
+class SpecifiedBy(ConfigModel):
+    """Pydantic model for ELMv3 SpecifiedBy property.
+
+    Stores the specified by of the credential in the format required by ELMv3.
+    This property is used in the HasClaim model.
+    """
+
+    id: str = "urn:epass:learningAchievementSpec:1"
+    type: str = "LearningAchievementSpecification"
+    title: dict = Field(validation_alias="title")
+    language: Language = Field(validation_alias="language")
+    mode: Mode = Field(validation_alias="mode")
+
+
 class AwardedBy(ConfigModel):
     """Pydantic model for ELMv3 AwardedBy property.
 
     Stores the awarded by of the credential in the format required by ELMv3.
-    This property is used in the HasClaim model.
+    This property is used in the HasClaim and ProvenBy models.
     """
 
     id: str = "urn:epass:awardingProcess:1"
     type: str = "AwardingProcess"
     awarding_body: AwardingBody = Field(validation_alias="awarding_body")
     awarding_date: str = Field(validation_alias="awarding_date")
+
+
+class ProvenBy(ConfigModel):
+    """Pydantic model for ELMv3 ProvenBy property.
+
+    Stores the proven by of the credential in the format required by ELMv3.
+    This property is used in the HasClaim model.
+    """
+
+    id: str = "urn:epass:learningAssessment:1"
+    type: str = "LearningAssessment"
+    awarded_by: AwardedBy = Field(validation_alias="awarded_by")
+    title: dict = Field(validation_alias="title")
+    grade: Grade = Field(validation_alias="grade")
+    id_verification: IdVerification = Field(validation_alias="id_verification")
+
+
+class PrimaryLanguage(LanguageBase):
+    """Pydantic model for ELMv3 PrimaryLanguage property.
+
+    Stores the primary language of the credential in the format required by ELMv3.
+    This property is used in the DisplayParameter model.
+    """
 
 
 class HasClaim(ConfigModel):
@@ -121,38 +242,17 @@ class HasClaim(ConfigModel):
 
     id: str = "urn:epass:learningAchievement:1"
     type: str = "LearningAchievement"
-    awarded_by: AwardedBy = Field(validation_alias="awarded_by")
     title: dict = Field(validation_alias="title")
-
-
-class PrimaryLanguage(ConfigModel):
-    """Pydantic model for ELMv3 PrimaryLanguage property.
-
-    Stores the primary language of the credential in the format required by ELMv3.
-    This property is used in the DisplayParameter model.
-    """
-
-    id: str
-    type: str = "Concept"
-    in_scheme: dict = Field(
-        default={
-            "id": "http://publications.europa.eu/resource/authority/language",
-            "type": "ConceptScheme",
-        },
-        validation_alias="in_scheme",
-    )
-    notation: str = "language"
-
-    @field_serializer("id")
-    def get_id(self, value):
-        return f"http://publications.europa.eu/resource/authority/language/{value}"
+    proven_by: ProvenBy = Field(validation_alias="proven_by")
+    awarded_by: AwardedBy = Field(validation_alias="awarded_by")
+    specified_by: SpecifiedBy = Field(validation_alias="specified_by")
 
 
 class DisplayParameter(ConfigModel):
     """Pydantic model for ELMv3 DisplayParameter property.
 
     Stores the display parameter of the credential in the format required by ELMv3.
-    This property is used in the ELMBodyModel model.
+    This property is used in the ELMBody model.
     """
 
     id: str = "urn:epass:displayParameter:1"
@@ -165,7 +265,7 @@ class CredentialSubject(ConfigModel):
     """Pydantic model for ELMv3 CredentialSubject property.
 
     Stores the credential subject of the credential in the format required by ELMv3.
-    This property is used in the ELMBodyModel model.
+    This property is used in the ELMBody model.
     """
 
     id: str = "urn:epass:person:1"
@@ -180,7 +280,7 @@ class Issuer(ConfigModel):
     """Pydantic model for ELMv3 Issuer property.
 
     Stores the issuer of the credential in the format required by ELMv3.
-    This property is used in the ELMBodyModel model.
+    This property is used in the ELMBody model.
     """
 
     id: str
@@ -203,7 +303,7 @@ class DeliveryDetails(ConfigModel):
     delivery_address: str = Field(validation_alias="delivery_address")
 
 
-class ELMBodyModel(ConfigModel):
+class ELMBody(ConfigModel):
     """Pydantic model for ELM body data.
 
     Stores all the data in the credential property required by ELMv3.
@@ -238,5 +338,5 @@ class ELMCredentialModel(ConfigModel):
     Stores the ELM credential in the format required by ELMv3.
     """
 
-    credential: ELMBodyModel = Field(validation_alias="credential")
+    credential: ELMBody = Field(validation_alias="credential")
     delivery_details: DeliveryDetails = Field(validation_alias="delivery_details")

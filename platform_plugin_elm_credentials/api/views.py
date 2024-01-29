@@ -1,4 +1,5 @@
 """API Views for the platform_plugin_elm_credentials plugin."""
+from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
 from edx_rest_framework_extensions.auth.session.authentication import SessionAuthenticationAllowInactiveUser
@@ -13,9 +14,14 @@ from platform_plugin_elm_credentials.api.serializers import ELMCredentialModel, 
 from platform_plugin_elm_credentials.api.utils import api_error, api_field_errors, pydantic_error_to_response
 from platform_plugin_elm_credentials.edxapp_wrapper import (
     BearerAuthenticationAllowInactiveUser,
+    CourseInstructorRole,
+    CourseStaffRole,
     GeneratedCertificate,
+    get_user_by_username_or_email,
     modulestore,
 )
+
+User = get_user_model()
 
 
 class ElmCredentialBuilderAPIView(APIView):
@@ -38,6 +44,7 @@ class ElmCredentialBuilderAPIView(APIView):
                 * course_id (str): The unique identifier for the course (required).
 
             * Query Parameters:
+                * username (str): The username of the user to generate the credential for (required).
                 * expires_at (str): The date and time when the credential expires (optional).
                 * to_file (bool): Whether to download the credential as a JSON file (optional).
 
@@ -45,9 +52,13 @@ class ElmCredentialBuilderAPIView(APIView):
 
         * GET platform-plugin-elm-credentials/{course_id}/api/credential-builder
 
+            * 400: The supplied course_id key is not valid.
+
+            * 403: The user is not a staff user.
+
             * 404:
-                * The supplied course_id key is not valid.
                 * The course is not found.
+                * The user is not found.
                 * The user does not have certificate for the course.
 
             * 200: Returns a JSON file containing ELM credentials for the user and course.
@@ -87,26 +98,49 @@ class ElmCredentialBuilderAPIView(APIView):
                 status_code=status.HTTP_404_NOT_FOUND,
             )
 
-        user = request.user
-        certificate = GeneratedCertificate.certificate_for_student(user, course_id)
+        user_has_access = any(
+            [
+                request.user.is_staff,
+                CourseStaffRole(course_key).has_user(request.user),
+                CourseInstructorRole(course_key).has_user(request.user),
+            ]
+        )
 
-        if not certificate:
+        if not user_has_access:
             return api_error(
-                f"The user {user} does not have certificate for {course_id=}.",
-                status_code=status.HTTP_404_NOT_FOUND,
+                "The user does not have access to generate credentials.",
+                status_code=status.HTTP_403_FORBIDDEN,
             )
 
         try:
-            query_params = QueryParamsModel(**request.query_params.dict())
-            additional_params = query_params.model_dump()
+            query_params = QueryParamsModel(**request.query_params.dict()).model_dump()
         except ValidationError as exc:
             return api_field_errors(
                 pydantic_error_to_response(exc.errors()),
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 
+        credential_username = query_params.get("username")
+        try:
+            credential_user = get_user_by_username_or_email(credential_username)
+        except User.DoesNotExist:
+            return api_field_errors(
+                {"username": f"The username='{credential_username}' does not exist."},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        certificate = GeneratedCertificate.certificate_for_student(
+            credential_user, course_id
+        )
+
+        if not certificate:
+            return api_error(
+                f"The user {credential_user} does not have certificate for {course_id=}.",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
         credential_builder = CredentialBuilder(
-            course_block, user, certificate, additional_params
+            course_block, credential_user, certificate, query_params
         )
         data = ELMCredentialModel(**credential_builder.build())
 
@@ -116,7 +150,8 @@ class ElmCredentialBuilderAPIView(APIView):
 
         response = HttpResponse(serialized_data)
 
-        if additional_params.get("to_file"):
-            response["Content-Disposition"] = 'attachment; filename="credential.json"'
+        if query_params.get("to_file"):
+            filename = f"credential-{credential_username}-{course_id}.json"
+            response["Content-Disposition"] = f'attachment; filename="{filename}"'
 
         return response
