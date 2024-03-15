@@ -77,6 +77,9 @@ PLATFORM_PLUGIN_ELM_CREDENTIALS_CERTIFICATES_BACKEND = (
 PLATFORM_PLUGIN_ELM_CREDENTIALS_STUDENT_BACKEND = (
     "platform_plugin_elm_credentials.edxapp_wrapper.backends.student_p_v1_test"
 )
+PLATFORM_PLUGIN_ELM_CREDENTIALS_ENROLLMENTS_BACKEND = (
+    "platform_plugin_elm_credentials.edxapp_wrapper.backends.enrollments_p_v1_test"
+)
 ELM_CREDENTIALS_DEFAULTS = {
     "language_code": "ENG",
     "language_map": {
