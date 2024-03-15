@@ -15,7 +15,7 @@ class QueryParamsModel(BaseModel):
     convert them to the appropriate type.
     """
 
-    username: str
+    username: Optional[str] = None
     expires_at: Optional[datetime] = None
     to_file: bool = True
 
