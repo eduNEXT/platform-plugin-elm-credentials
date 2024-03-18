@@ -147,8 +147,15 @@ class ElmCredentialBuilderAPIView(APIView):
                 return response
         else:
             json_data = self.generate_bulk_credentials(
-                course_id, query_params, course_block
+                course_id, course_block, query_params
             )
+
+            if not json_data:
+                return api_error(
+                    f"No credentials found for {course_id=}.",
+                    status_code=status.HTTP_404_NOT_FOUND,
+                )
+
             zip_buffer = io.BytesIO()
 
             with zipfile.ZipFile(zip_buffer, "w") as zipf:
@@ -221,8 +228,8 @@ class ElmCredentialBuilderAPIView(APIView):
         enrollments = get_user_enrollments(course_id).filter(
             user__is_superuser=False, user__is_staff=False
         )
-        credentials = []
 
+        credentials = []
         for enrollment in enrollments:
             user = enrollment.user
             certificate = GeneratedCertificate.certificate_for_student(user, course_id)
