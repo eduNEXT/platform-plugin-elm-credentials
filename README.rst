@@ -109,14 +109,16 @@ Deploying
 Tutor environments
 ------------------
 
-To use this plugin in a Tutor environment, you must install it as a requirement of the ``openedx`` image. To achieve this, follow these steps:
+To use this plugin in a Tutor environment, you must install it as a requirement
+of the ``openedx`` image. To achieve this, follow these steps:
 
 .. code-block:: bash
 
-    tutor config save --append OPENEDX_EXTRA_PIP_REQUIREMENTS=git+https://github.com/edunext/platform-plugin-elm-credential@vX.Y.Z
+    tutor config save --append OPENEDX_EXTRA_PIP_REQUIREMENTS=git+https://github.com/edunext/platform-plugin-elm-credentials@vX.Y.Z
     tutor images build openedx
 
 Then, deploy the resultant image in your environment.
+
 
 Using the API
 *************
@@ -158,10 +160,11 @@ endpoint:
     ``Authorization`` header of the requests to the API.
 
 Finally, you are ready to use the API. You must take into account that only
-users with ``staff`` role can use the API. The next endpoint are available:
+users with **django staff**, **course staff** or **course instructor** role can
+use the API. The next endpoint are available:
 
 - GET ``/<lms_host>/platform-plugin-elm-credentials/<course_id>/api/credential-builder/``:
-  Generate a JSON/ZIP file with the credential(s) in ELMv3 format.
+  Generate a ZIP file with the credential(s) in ELMv3 format.
 
   **Path parameters**
 
@@ -177,10 +180,12 @@ users with ``staff`` role can use the API. The next endpoint are available:
     must be in the format ``YYYY-MM-DDTHH:mm:ss±hh:mm``. This parameter
     modifies the properties ``validUntil`` and ``expirationDate`` of the ELMv3
     format. By default, it is ``None``.
-  - **to_file (Optional)**: If it is ``true``, the response will be a JSON file
-    (if the username is provided) or a ZIP file with the JSON files (if the
-    username is not provided) with the ELMv3 format. If it is ``false``, the
-    response will be a JSON with the ELMv3 format. By default, it is ``true``.
+  - **to_file (Optional)**: If it is ``true``, the response will be a ZIP file
+    with the ELMv3 format. If it is ``false``, the response will be a JSON with
+    the ELMv3 format. By default, it is ``true``.
+
+**IMPORTANT**: Bulk download of credentials does not include staff or superuser
+users.
 
 
 Configuring plugin settings
