@@ -70,7 +70,7 @@ class ElmCredentialBuilderAPIView(APIView):
                 * The user is not found.
                 * The user does not have certificate for the course.
 
-            * 200: Returns a JSON/ZIP file containing ELM credentials for the user(s) and course.
+            * 200: Returns a ZIP file containing ELM credentials for the learner(s) in the course.
     """
 
     authentication_classes = (

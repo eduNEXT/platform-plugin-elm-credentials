@@ -173,8 +173,8 @@ use the API. The next endpoint are available:
   **Query parameters**
 
   - **username (Optional)**: The username of the learner to generate the
-    credential for. If it is not provided, all the learners who have completed
-    the course will be used to generate the credentials. By default, it is
+    credential for. If it is not provided, all the learners who have a
+    certificate will be used to generate the credentials. By default, it is
     ``None``.
   - **expires_at (Optional)**: Date of the expiration of the credential. It
     must be in the format ``YYYY-MM-DDTHH:mm:ss±hh:mm``. This parameter
