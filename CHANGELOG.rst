@@ -16,6 +16,13 @@ Unreleased
 
 *
 
+0.3.0 - 2024-03-19
+
+Added
+=====
+
+* Add bulk download of all credentials in a course
+
 0.2.1 - 2024-01-29
 
 Changed
