@@ -1,4 +1,10 @@
 """API Views for the platform_plugin_elm_credentials plugin."""
+
+from __future__ import annotations
+
+import io
+import zipfile
+
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
 from edx_rest_framework_extensions.auth.jwt.authentication import JwtAuthentication
@@ -18,6 +24,7 @@ from platform_plugin_elm_credentials.edxapp_wrapper import (
     CourseStaffRole,
     GeneratedCertificate,
     get_user_by_username_or_email,
+    get_user_enrollments,
     modulestore,
 )
 
@@ -28,13 +35,12 @@ class ElmCredentialBuilderAPIView(APIView):
     """
     API view for retrieving and generating ELMv3 credentials.
 
-    This class handles the retrieval and generation of ELMv3 credentials for a specified course
-    associated with the provided course ID. The credentials include information about the user,
-    the course, and the certificate of completion.
+    This class handles the retrieval and generation of ELMv3 credentials for the specified course.
+    The credentials include information about the user, the course, and the certificate of completion.
 
     `Use Cases`:
 
-        * GET: Retrieve ELMv3 credential format in a JSON file for the specified course ID.
+        * GET: Retrieve ELMv3 credential format in a ZIP file for the specified course ID.
 
     `Example Requests`:
 
@@ -44,9 +50,12 @@ class ElmCredentialBuilderAPIView(APIView):
                 * course_id (str): The unique identifier for the course (required).
 
             * Query Parameters:
-                * username (str): The username of the user to generate the credential for (required).
+                * username (str): The username of the user to generate the credential for (optional).
+                    If not provided, credentials for all users in the course will be generated.
                 * expires_at (str): The date and time when the credential expires (optional).
-                * to_file (bool): Whether to download the credential as a JSON file (optional).
+                    If not provided, the credential will not expire.
+                * to_file (bool): Whether to download the credential as a ZIP file (optional).
+                    If not provided, the credential will be returned as a file.
 
     `Example Response`:
 
@@ -61,7 +70,7 @@ class ElmCredentialBuilderAPIView(APIView):
                 * The user is not found.
                 * The user does not have certificate for the course.
 
-            * 200: Returns a JSON file containing ELM credentials for the user and course.
+            * 200: Returns a ZIP file containing ELM credentials for the learner(s) in the course.
     """
 
     authentication_classes = (
@@ -121,37 +130,154 @@ class ElmCredentialBuilderAPIView(APIView):
             )
 
         credential_username = query_params.get("username")
+        if not credential_username:
+            json_data = self.generate_bulk_credentials(
+                course_id, course_block, query_params
+            )
+        else:
+            json_data = self.generate_single_credential(
+                credential_username, course_id, course_block, query_params
+            )
+
+        if isinstance(json_data, HttpResponse):
+            return json_data
+
+        if not credential_username or query_params.get("to_file"):
+            return self.to_zip(course_id, json_data)
+
+        response = HttpResponse(json_data.values())
+        return response
+
+    def generate_single_credential(
+        self, username: str, course_id: str, course_block, additional_params: dict
+    ) -> dict | HttpResponse:
+        """
+        Generate ELM credentials for the specified user and course.
+
+        Args:
+            username (str): The username of the user to generate the credential for.
+            course_id (str): The unique identifier for the course.
+            course_block (CourseBlockWithMixins): The course block object.
+            additional_params (dict): The additional parameters for the credential.
+
+        Returns:
+            str | HttpResponse: The JSON representation of the ELM credential model.
+                If the user or certificate is not found, appropriate error responses are returned.
+        """
         try:
-            credential_user = get_user_by_username_or_email(credential_username)
+            user = get_user_by_username_or_email(username)
         except User.DoesNotExist:
             return api_field_errors(
-                {"username": f"The username='{credential_username}' does not exist."},
+                {"username": f"The username='{username}' does not exist."},
                 status_code=status.HTTP_404_NOT_FOUND,
             )
 
-        certificate = GeneratedCertificate.certificate_for_student(
-            credential_user, course_id
-        )
+        certificate = GeneratedCertificate.certificate_for_student(user, course_id)
 
         if not certificate:
             return api_error(
-                f"The user {credential_user} does not have certificate for {course_id=}.",
+                f"The user {user} does not have certificate for {course_id=}.",
                 status_code=status.HTTP_404_NOT_FOUND,
             )
 
+        return {
+            self.credential_name(user, course_id): self.create_credential(
+                user, certificate, course_block, additional_params
+            )
+        }
+
+    def generate_bulk_credentials(
+        self, course_id: str, course_block, additional_params: dict
+    ) -> dict | HttpResponse:
+        """
+        Generate ELM credentials for all users in the specified course.
+
+        Args:
+            course_id (str): The unique identifier for the course.
+            course_block (CourseBlockWithMixins): The course block object.
+            additional_params (dict): The additional parameters for the credential.
+
+        Returns:
+            list[Tuple[str, str]]: The list of tuples containing the filename and JSON data.
+        """
+        enrollments = get_user_enrollments(course_id).filter(
+            user__is_superuser=False, user__is_staff=False
+        )
+
+        credentials = {}
+        for enrollment in enrollments:
+            user = enrollment.user
+            certificate = GeneratedCertificate.certificate_for_student(user, course_id)
+            if certificate:
+                json_data = self.create_credential(
+                    user, certificate, course_block, additional_params
+                )
+                credentials[self.credential_name(user, course_id)] = json_data
+
+        if not credentials:
+            return api_error(
+                f"No credentials found for {course_id=}.",
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+
+        return credentials
+
+    @staticmethod
+    def create_credential(
+        user, certificate, course_block, additional_params: dict
+    ) -> str:
+        """
+        Create an ELM credential model from the specified data.
+
+        Args:
+            user (User): The user object.
+            certificate (GeneratedCertificate): The certificate object.
+            course_block (CourseBlockWithMixins): The course block object.
+            additional_params (dict): The additional parameters for the credential.
+
+        Returns:
+            str: The JSON representation of the ELM credential model.
+        """
         credential_builder = CredentialBuilder(
-            course_block, credential_user, certificate, query_params
+            course_block, user, certificate, additional_params
         )
         data = ELMCredentialModel(**credential_builder.build())
+        return data.model_dump_json(indent=2, by_alias=True, exclude_none=True)
 
-        serialized_data = data.model_dump_json(
-            indent=2, by_alias=True, exclude_none=True
-        )
+    @staticmethod
+    def credential_name(user, course_id: str) -> str:
+        """
+        Generate a name for the credential file.
 
-        response = HttpResponse(serialized_data)
+        Args:
+            user (User): The user object.
+            course_id (str): The unique identifier for the course.
 
-        if query_params.get("to_file"):
-            filename = f"credential-{credential_username}-{course_id}.json"
-            response["Content-Disposition"] = f'attachment; filename="{filename}"'
+        Returns:
+            str: The name of the credential file.
+        """
+        return f"credential-{user}-{course_id}.json"
 
+    @staticmethod
+    def to_zip(course_id: str, json_data: dict) -> HttpResponse:
+        """
+        Create a ZIP file from the specified JSON data.
+
+        Args:
+            course_id (str): The unique identifier for the course.
+            json_data (dict): The JSON data to be zipped.
+
+        Returns:
+            HttpResponse: The HTTP response to download the file.
+        """
+        zip_buffer = io.BytesIO()
+
+        with zipfile.ZipFile(zip_buffer, "w") as zipf:
+            for filename, content in json_data.items():
+                zipf.writestr(filename, content)
+
+        response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
+        response[
+            "Content-Disposition"
+        ] = f'attachment; filename="credentials-{course_id}.zip"'
         return response

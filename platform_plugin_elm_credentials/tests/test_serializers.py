@@ -1,4 +1,5 @@
 """Test serializers of platform_plugin_elm_credentials."""
+
 from unittest import TestCase
 
 from ddt import data, ddt, unpack
@@ -13,6 +14,10 @@ class TestSerializers(TestCase):
     mock_expires_at = "2021-01-01T00:00:00+00:00"
 
     @data(
+        (
+            {},
+            {"username": None, "expires_at": None, "to_file": True},
+        ),
         (
             {"username": "john_doe"},
             {"username": "john_doe", "expires_at": None, "to_file": True},
@@ -39,5 +44,6 @@ class TestSerializers(TestCase):
         """Test QueryParamsModel serializer."""
         query_params = QueryParamsModel(**query_params)
         dumped_params = query_params.model_dump()
-        self.assertEqual(expected["to_file"], dumped_params["to_file"])
+        self.assertEqual(expected["username"], dumped_params["username"])
         self.assertEqual(expected["expires_at"], dumped_params["expires_at"])
+        self.assertEqual(expected["to_file"], dumped_params["to_file"])

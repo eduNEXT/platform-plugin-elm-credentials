@@ -1,4 +1,5 @@
 """ Tests for the api views."""
+
 import json
 from datetime import datetime
 from unittest.mock import Mock, patch
@@ -25,6 +26,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
     course_staff_role_patch = patch(f"{VIEWS_MODULE_PATH}.CourseStaffRole")
     course_instructor_role_patch = patch(f"{VIEWS_MODULE_PATH}.CourseInstructorRole")
     generated_cert_patch = patch(f"{VIEWS_MODULE_PATH}.GeneratedCertificate")
+    get_user_enrollments_patch = patch(f"{VIEWS_MODULE_PATH}.get_user_enrollments")
     get_user_by_username_or_email_patch = patch(
         f"{VIEWS_MODULE_PATH}.get_user_by_username_or_email"
     )
@@ -34,7 +36,8 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         self.view = ElmCredentialBuilderAPIView.as_view()
         self.url = reverse("credential-builder-api")
 
-        self.request = self.factory.get(self.url, {"username": "john_doe"})
+        self.username = "john_doe"
+        self.request = self.factory.get(self.url, {"username": self.username})
         self.request_user = Mock()
         self.request_user.is_staff = True
 
@@ -43,6 +46,8 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         self.credential_user = Mock()
         self.credential_user.email = "john@doe.com"
         self.credential_user.profile.name = "John Doe"
+
+        self.user_enrollments = [Mock(user=self.credential_user)]
 
         self.course_id = "course-v1:edX+DemoX+Demo_Course"
         self.org = "edX"
@@ -81,12 +86,14 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
+        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
+        force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
         credential = response_data["credential"]
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("Content-Disposition", response.headers)
+        self.assertNotIn("Content-Disposition", response.headers)
         self.assertEqual(
             response_data["deliveryDetails"]["deliveryAddress"],
             self.credential_user.email,
@@ -130,12 +137,14 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
+        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
+        force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
         credential = response_data["credential"]
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("Content-Disposition", response.headers)
+        self.assertNotIn("Content-Disposition", response.headers)
         self.assertEqual(
             response_data["deliveryDetails"]["deliveryAddress"],
             self.credential_user.email,
@@ -180,12 +189,14 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
+        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
+        force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
         credential = response_data["credential"]
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("Content-Disposition", response.headers)
+        self.assertNotIn("Content-Disposition", response.headers)
         self.assertEqual(
             response_data["deliveryDetails"]["deliveryAddress"],
             self.credential_user.email,
@@ -206,6 +217,77 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         self.assertEqual(
             credential["displayParameter"]["primaryLanguage"]["id"].split("/")[-1],
             "SPA",
+        )
+
+    @generated_cert_patch
+    @get_user_enrollments_patch
+    @get_user_by_username_or_email_patch
+    @course_instructor_role_patch
+    @course_staff_role_patch
+    @modulestore_patch
+    def test_get_elm_credentials_for_all_students(
+        self,
+        modulestore_mock: Mock,
+        course_staff_role_mock: Mock,
+        course_instructor_role_mock: Mock,
+        get_user_by_username_or_email_mock: Mock,
+        get_user_enrollments_mock: Mock,
+        generated_cert_mock: Mock,
+    ):
+        """Test GET request for Elm credentials for all students."""
+        modulestore_mock.return_value.get_course.return_value = self.course
+        course_staff_role_mock.return_value.has_user.return_value = True
+        course_instructor_role_mock.return_value.has_user.return_value = True
+        get_user_by_username_or_email_mock.return_value = self.credential_user
+        get_user_enrollments_mock.return_value.filter.return_value = (
+            self.user_enrollments
+        )
+        generated_cert_mock.certificate_for_student.return_value = self.certificate
+
+        self.request = self.factory.get(self.url)
+        force_authenticate(self.request, user=self.request_user)
+        response = self.view(self.request, course_id=self.course_id)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.headers["Content-Type"], "application/zip")
+        self.assertEqual(
+            response.headers["Content-Disposition"],
+            f'attachment; filename="credentials-{self.course_id}.zip"',
+        )
+
+    @generated_cert_patch
+    @get_user_enrollments_patch
+    @get_user_by_username_or_email_patch
+    @course_instructor_role_patch
+    @course_staff_role_patch
+    @modulestore_patch
+    def test_get_elm_credentials_for_all_students_without_certificates(
+        self,
+        modulestore_mock: Mock,
+        course_staff_role_mock: Mock,
+        course_instructor_role_mock: Mock,
+        get_user_by_username_or_email_mock: Mock,
+        get_user_enrollments_mock: Mock,
+        generated_cert_mock: Mock,
+    ):
+        """Test GET request for Elm credentials for all students without certificates."""
+        modulestore_mock.return_value.get_course.return_value = self.course
+        course_staff_role_mock.return_value.has_user.return_value = True
+        course_instructor_role_mock.return_value.has_user.return_value = True
+        get_user_by_username_or_email_mock.return_value = self.credential_user
+        get_user_enrollments_mock.return_value.filter.return_value = (
+            self.user_enrollments
+        )
+        generated_cert_mock.certificate_for_student.return_value = None
+
+        self.request = self.factory.get(self.url)
+        force_authenticate(self.request, user=self.request_user)
+        response = self.view(self.request, course_id=self.course_id)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(
+            response.data["error"][0],
+            f"No credentials found for course_id='{self.course_id}'.",
         )
 
     @generated_cert_patch
