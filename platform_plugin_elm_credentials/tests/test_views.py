@@ -87,9 +87,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
-        self.request = self.factory.get(
-            self.url, {"username": self.username, "to_file": False}
-        )
+        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
         force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
@@ -140,9 +138,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
-        self.request = self.factory.get(
-            self.url, {"username": self.username, "to_file": False}
-        )
+        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
         force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
@@ -194,9 +190,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
-        self.request = self.factory.get(
-            self.url, {"username": self.username, "to_file": False}
-        )
+        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
         force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
