@@ -66,6 +66,23 @@ def get_fullname(name: str) -> Tuple[str, str]:
     return first_name, last_name
 
 
+def get_filename(course_id: str, user=None) -> str:
+    """
+    Get the filename for the specified course ID and user.
+
+    Args:
+        course_id (str): The unique identifier for the course.
+        user (User, optional): The user object. Defaults to None.
+
+    Returns:
+        str: The filename
+    """
+    course_id = course_id.replace(":", "_")
+    if not user:
+        return f"credentials-{course_id}.zip"
+    return f"credential-{user}-{course_id}.json"
+
+
 def api_field_errors(field_errors: dict, status_code: int) -> Response:
     """
     Build a response with field errors.

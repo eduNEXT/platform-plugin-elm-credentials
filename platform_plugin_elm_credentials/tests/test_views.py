@@ -50,6 +50,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         self.user_enrollments = [Mock(user=self.credential_user)]
 
         self.course_id = "course-v1:edX+DemoX+Demo_Course"
+        self.course_id_filename = self.course_id.replace(":", "_")
         self.org = "edX"
         self.display_name = "Demo Course"
         self.other_course_settings = {
@@ -86,7 +87,9 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
-        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
+        self.request = self.factory.get(
+            self.url, {"username": self.username, "to_file": False}
+        )
         force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
@@ -137,7 +140,9 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
-        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
+        self.request = self.factory.get(
+            self.url, {"username": self.username, "to_file": False}
+        )
         force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
@@ -189,7 +194,9 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         get_user_by_username_or_email_mock.return_value = self.credential_user
         generated_cert_mock.certificate_for_student.return_value = self.certificate
 
-        self.request = self.factory.get(self.url, {"username": self.username, "to_file": False})
+        self.request = self.factory.get(
+            self.url, {"username": self.username, "to_file": False}
+        )
         force_authenticate(self.request, user=self.request_user)
         response = self.view(self.request, course_id=self.course_id)
         response_data = json.loads(response.content)
@@ -252,7 +259,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         self.assertEqual(response.headers["Content-Type"], "application/zip")
         self.assertEqual(
             response.headers["Content-Disposition"],
-            f'attachment; filename="credentials-{self.course_id}.zip"',
+            f'attachment; filename="credentials-{self.course_id_filename}.zip"',
         )
 
     @generated_cert_patch
