@@ -50,6 +50,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         self.user_enrollments = [Mock(user=self.credential_user)]
 
         self.course_id = "course-v1:edX+DemoX+Demo_Course"
+        self.course_id_filename = self.course_id.replace(":", "_")
         self.org = "edX"
         self.display_name = "Demo Course"
         self.other_course_settings = {
@@ -252,7 +253,7 @@ class ElmCredentialBuilderAPIViewTest(APITestCase):
         self.assertEqual(response.headers["Content-Type"], "application/zip")
         self.assertEqual(
             response.headers["Content-Disposition"],
-            f'attachment; filename="credentials-{self.course_id}.zip"',
+            f'attachment; filename="credentials-{self.course_id_filename}.zip"',
         )
 
     @generated_cert_patch

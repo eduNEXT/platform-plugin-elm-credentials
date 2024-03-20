@@ -16,6 +16,13 @@ Unreleased
 
 *
 
+0.3.1 - 2024-03-20
+
+Added
+=====
+
+* Fix filename of credential ZIP/JSON files
+
 0.3.0 - 2024-03-19
 
 Added

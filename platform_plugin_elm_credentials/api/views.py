@@ -17,7 +17,12 @@ from rest_framework.views import APIView
 
 from platform_plugin_elm_credentials.api.credential_builder import CredentialBuilder
 from platform_plugin_elm_credentials.api.serializers import ELMCredentialModel, QueryParamsModel
-from platform_plugin_elm_credentials.api.utils import api_error, api_field_errors, pydantic_error_to_response
+from platform_plugin_elm_credentials.api.utils import (
+    api_error,
+    api_field_errors,
+    get_filename,
+    pydantic_error_to_response,
+)
 from platform_plugin_elm_credentials.edxapp_wrapper import (
     BearerAuthenticationAllowInactiveUser,
     CourseInstructorRole,
@@ -181,7 +186,7 @@ class ElmCredentialBuilderAPIView(APIView):
             )
 
         return {
-            self.credential_name(user, course_id): self.create_credential(
+            get_filename(course_id, user): self.create_credential(
                 user, certificate, course_block, additional_params
             )
         }
@@ -212,7 +217,7 @@ class ElmCredentialBuilderAPIView(APIView):
                 json_data = self.create_credential(
                     user, certificate, course_block, additional_params
                 )
-                credentials[self.credential_name(user, course_id)] = json_data
+                credentials[get_filename(course_id, user)] = json_data
 
         if not credentials:
             return api_error(
@@ -245,20 +250,6 @@ class ElmCredentialBuilderAPIView(APIView):
         return data.model_dump_json(indent=2, by_alias=True, exclude_none=True)
 
     @staticmethod
-    def credential_name(user, course_id: str) -> str:
-        """
-        Generate a name for the credential file.
-
-        Args:
-            user (User): The user object.
-            course_id (str): The unique identifier for the course.
-
-        Returns:
-            str: The name of the credential file.
-        """
-        return f"credential-{user}-{course_id}.json"
-
-    @staticmethod
     def to_zip(course_id: str, json_data: dict) -> HttpResponse:
         """
         Create a ZIP file from the specified JSON data.
@@ -279,5 +270,5 @@ class ElmCredentialBuilderAPIView(APIView):
         response = HttpResponse(zip_buffer.getvalue(), content_type="application/zip")
         response[
             "Content-Disposition"
-        ] = f'attachment; filename="credentials-{course_id}.zip"'
+        ] = f'attachment; filename="{get_filename(course_id)}"'
         return response
