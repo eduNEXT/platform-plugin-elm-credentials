@@ -18,6 +18,25 @@ Government - 2024.
 
 .. _European Learning Model: https://github.com/european-commission-empl/European-Learning-Model
 
+Compatibility Notes
+===================
+
++------------------+--------------+
+| Open edX Release | Version      |
++==================+==============+
+| Palm             | >= 0.2.0     |
++------------------+--------------+
+| Quince           | >= 0.2.0     |
++------------------+--------------+
+| Redwood          | >= 0.2.0     |
++------------------+--------------+
+
+The settings can be changed in ``platform_plugin_elm_credentials/settings/common.py``
+or, for example, in tutor configurations.
+
+**NOTE**: the current ``common.py`` works with Open edX Palm, Quince and
+Redwood version.
+
 
 Getting Started
 ***************
